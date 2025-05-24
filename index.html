@@ -147,7 +147,6 @@
       background-color: #007BFF;
       color: white;
     }
-    /* Адаптация для мобильных */
     @media (max-width: 768px) {
       .remember-btn {
         font-size: 11px;
@@ -207,13 +206,21 @@
 <div style="margin-bottom: 15px;">
   <button onclick="togglePostpress()" id="btnPostpress">⚙️ Послепечатные работы ▼</button>
   <div id="postpressPanel" class="settings-panel">
+    <!-- Резка -->
+    <label><input type="checkbox" id="cuttingEnabled" onchange="updateSubFields()"> Резка</label>
+    <div class="sub-field" id="cuttingOptions" style="display:none;">
+      <label>Стоимость резки за лист:</label>
+      <input type="number" id="cuttingCostSetting" value="1" oninput="onInputChange()">
+      <label>Настройка резки:</label>
+      <input type="number" id="setupCutting" value="300" oninput="onInputChange()">
+    </div>
     <!-- Ламинация -->
     <label><input type="checkbox" id="laminationEnabled" onchange="updateSubFields()"> Ламинация</label>
     <div class="sub-field" id="laminationOptions" style="display:none;">
       <label>Цена ламинации за лист:</label>
       <input type="number" id="laminationCost" value="12" oninput="onInputChange()">
       <label>Настройка ламинации:</label>
-      <input type="number" id="setupLamination" value="500" oninput="onInputChange()">
+      <input type="number" id="setupLamination" value="300" oninput="onInputChange()">
       <label><input type="radio" name="laminationSides" value="1+0" checked> Односторонняя</label>
       <label><input type="radio" name="laminationSides" value="1+1"> Двусторонняя</label>
     </div>
@@ -243,7 +250,7 @@
       <label>Настройка вырубки:</label>
       <input type="number" id="setupDiecut" value="5000" oninput="onInputChange()">
       <label>Стоимость штампа:</label>
-      <input type="number" id="diecutStampCostSetting" value="0" oninput="onInputChange()">
+      <input type="number" id="diecutStampCostSetting" value="5500" oninput="onInputChange()">
     </div>
     <!-- УФ-лак -->
     <label><input type="checkbox" id="uvLacquerEnabled" onchange="updateSubFields()"> УФ-лак</label>
@@ -257,9 +264,9 @@
     <label><input type="checkbox" id="embossingEnabled" onchange="updateSubFields()"> Тиснение</label>
     <div class="sub-field" id="embossingOptions" style="display:none;">
       <label>Цена тиснения за изделие:</label>
-      <input type="number" id="embossingCostSetting" value="8" oninput="onInputChange()">
+      <input type="number" id="embossingCostSetting" value="10" oninput="onInputChange()">
       <label>Настройка тиснения:</label>
-      <input type="number" id="setupEmbossing" value="4000" oninput="onInputChange()">
+      <input type="number" id="setupEmbossing" value="4500" oninput="onInputChange()">
       <label>Стоимость клише:</label>
       <input type="number" id="embossingKlischeCostSetting" value="2000" oninput="onInputChange()">
     </div>
@@ -270,14 +277,6 @@
       <input type="number" id="assemblyCostSetting" value="5" oninput="onInputChange()">
       <label>Настройка сборки:</label>
       <input type="number" id="setupAssembly" value="300" oninput="onInputChange()">
-    </div>
-    <!-- Резка -->
-    <label><input type="checkbox" id="cuttingEnabled" onchange="updateSubFields()"> Резка</label>
-    <div class="sub-field" id="cuttingOptions" style="display:none;">
-      <label>Цена резки за изделие:</label>
-      <input type="number" id="cuttingCostSetting" value="1" oninput="onInputChange()">
-      <label>Настройка резки:</label>
-      <input type="number" id="setupCutting" value="30" oninput="onInputChange()">
     </div>
   </div>
 </div>
@@ -302,23 +301,28 @@
       <button onclick="setFormat('297×420')">А3 (297×420)</button>
       <button onclick="setFormat('420×594')">А2 (420×594)</button>
     </div>
+    <!-- Тираж -->
     <label>Тираж:</label>
-    <div class="quantity-buttons" id="quantityButtons"></div>
     <input type="number" id="quantity" value="1000" oninput="onInputChange();">
+    <div class="quantity-buttons" id="quantityButtons"></div>
+    <!-- Цветность -->
     <label>Цветность:</label>
     <div class="side-buttons">
       <button id="btn_4_0" onclick="setSides(1)" class="selected">4+0</button>
       <button id="btn_4_4" onclick="setSides(2)">4+4</button>
     </div>
+    <!-- Тип бумаги -->
     <label>Тип бумаги:</label>
     <select id="paperType" onchange="updatePaperOptions(); onInputChange();">
       <option value="offset">Офсетная</option>
       <option value="matt" selected>Мелованная</option>
       <option value="cardboard">Картон</option>
     </select>
+    <!-- Плотность -->
     <label>Плотность бумаги:</label>
     <div class="paper-type-buttons" id="paperOptions"></div>
     <div id="display_paper">Выбрано: Мелованная 300 г/м²</div>
+    <!-- Цена за кг -->
     <label>Цена бумаги за кг:</label>
     <input type="number" id="paperPricePerKg" value="300" oninput="onInputChange();">
   </div>
@@ -332,6 +336,7 @@
           <th>Листов</th>
           <th>Бумага</th>
           <th>Печать</th>
+          <th>Резка</th>
           <th>Ламин.</th>
           <th>Биговка</th>
           <th>Фальц.</th>
@@ -339,7 +344,6 @@
           <th>УФ-лак</th>
           <th>Тиснение</th>
           <th>Сборка</th>
-          <th>Резка</th>
           <th>Итого</th>
         </tr>
       </thead>
@@ -364,7 +368,7 @@
     </div>
   </div>
 </div>
-<!-- Три блока результатов -->
+<!-- Сохранённые результаты -->
 <div class="saved-list">
   <h3>Себестоимость</h3>
   <p id="savedMessage_cost">Пока нет данных</p>
@@ -380,26 +384,24 @@
   <p id="savedMessage_profit">Пока нет данных</p>
   <div id="savedCalculations_profit"></div>
 </div>
-<!-- Поле наценки -->
+<!-- Наценка -->
 <div style="margin-top: 15px;">
   <label>Наценка (%):</label>
   <input type="number" id="markupPercent" value="20" oninput="onInputChange()" style="width: 100%;">
 </div>
 <button onclick="copyToClipboard()" style="margin-top: 10px;">💾 Копировать в буфер</button>
 <input type="hidden" id="densityInput" value="300">
-<!-- Блок вывода констант -->
+<!-- Константы -->
 <div style="margin-top: 30px; border-top: 2px solid #ccc; padding-top: 20px;">
   <h3>🔧 Константы для расчётов</h3>
-  <!-- Стоимость бумаги -->
   <div style="margin-bottom: 20px;">
     <h4>📄 Стоимость бумаги за кг</h4>
     <ul>
       <li><strong>Офсетная:</strong> 125 руб./кг</li>
-      <li><strong>Мелованная:</strong> 130 руб./кг (до 200 г/м²), 155 руб./кг (свыше)</li>
+      <li><strong>Мелованная:</strong> 135 руб./кг (до 200 г/м²), 155 руб./кг (свыше)</li>
       <li><strong>Картон:</strong> 160 руб./кг</li>
     </ul>
   </div>
-  <!-- Стоимость печати -->
   <div style="margin-bottom: 20px;">
     <h4>🖨️ Стоимость печати</h4>
     <ul>
@@ -408,23 +410,22 @@
       <li><strong>А2 (офсет):</strong> 2 руб./лист + приладка 10 000 руб.</li>
     </ul>
   </div>
-  <!-- Послепечатные операции -->
   <div style="margin-bottom: 20px;">
     <h4>✂️ Послепечатные работы</h4>
     <ul>
-      <li><strong>Ламинация:</strong> 12 руб./лист + настройка 500 руб.</li>
+      <li><strong>Резка:</strong> 1 руб./лист + настройка 300 руб.</li>
+      <li><strong>Ламинация:</strong> 12 руб./лист + настройка 300 руб.</li>
       <li><strong>Биговка:</strong> 2 руб./биг + настройка 300 руб.</li>
       <li><strong>Фальцовка:</strong> 1 руб./изделие + настройка 300 руб.</li>
-      <li><strong>Вырубка:</strong> 5 руб./изделие + настройка 5000 руб. + штамп 0 руб.</li>
+      <li><strong>Вырубка:</strong> 5 руб./изделие + настройка 5000 руб. + штамп 5500 руб.</li>
       <li><strong>УФ-лак:</strong> 10 руб./лист + настройка 5000 руб.</li>
-      <li><strong>Тиснение:</strong> 8 руб./изделие + настройка 4000 руб. + клише 2000 руб.</li>
+      <li><strong>Тиснение:</strong> 10 руб./изделие + настройка 4500 руб. + клише 2000 руб.</li>
       <li><strong>Сборка:</strong> 5 руб./изделие + настройка 300 руб.</li>
-      <li><strong>Резка:</strong> 1 руб./изделие + настройка 30 руб.</li>
     </ul>
   </div>
 </div>
 <script>
-  let s = 1; // 4+0 / 4+4
+  let s = 1;
   const formatLabels = {
     Z: "Цифра SRA3",
     E: "Цифра B2",
@@ -499,7 +500,7 @@
   }
   function getPaperPriceByTypeAndDensity(paperType, density) {
     if (paperType === "offset") return 125;
-    if (paperType === "matt") return density <= 200 ? 130 : 155;
+    if (paperType === "matt") return density <= 200 ? 135 : 155;
     if (paperType === "cardboard") return 160;
     return 0;
   }
@@ -545,8 +546,11 @@
     const P_E = Number(document.getElementById("setupPrintE").value);
     const c_p_Offset = Number(document.getElementById("printCostOffsetA2").value);
     const P_Offset = Number(document.getElementById("setupPrintOffsetA2").value);
+    const cuttingEnabled = document.getElementById("cuttingEnabled")?.checked ?? false;
+    const cuttingCost = Number(document.getElementById("cuttingCostSetting").value) || 0;
+    const setupCutting = Number(document.getElementById("setupCutting").value) || 0;
     const laminationEnabled = document.getElementById("laminationEnabled")?.checked ?? false;
-    const laminationCostPerSheet = Number(document.getElementById("laminationCost").value) || 0;
+    const laminationCost = Number(document.getElementById("laminationCost").value) || 0;
     const setupLamination = Number(document.getElementById("setupLamination").value) || 0;
     const laminationSides = document.querySelector('input[name="laminationSides"]:checked')?.value ?? "1+0";
     const scoreEnabled = document.getElementById("scoreEnabled")?.checked ?? false;
@@ -570,10 +574,6 @@
     const assemblyEnabled = document.getElementById("assemblyEnabled")?.checked ?? false;
     const assemblyCost = Number(document.getElementById("assemblyCostSetting").value) || 0;
     const setupAssembly = Number(document.getElementById("setupAssembly").value) || 0;
-    const cuttingEnabled = document.getElementById("cuttingEnabled")?.checked ?? false;
-    const cuttingCost = Number(document.getElementById("cuttingCostSetting").value) || 0;
-    const setupCutting = Number(document.getElementById("setupCutting").value) || 0;
-
     sheetFormats.forEach(sheet => {
       const W = w + 4;
       const H = h + 4;
@@ -593,19 +593,18 @@
       const setupPrintValue = sheet.name === "Z" ? P_Z :
                              sheet.name === "E" ? P_E : P_Offset;
       const printTotal = printCostPerSheet * totalSheets * s + setupPrintValue;
-      let laminationTotal = 0;
-      if (laminationEnabled) {
-        const sides = laminationSides === "1+1" ? 2 : 1;
-        laminationTotal = laminationCostPerSheet * totalSheets * sides + setupLamination;
-      }
+      const cuttingTotal = cuttingEnabled ? cuttingCost * totalSheets + setupCutting : 0;
+      const laminationTotal = laminationEnabled ?
+        laminationCost * totalSheets * (laminationSides === "1+1" ? 2 : 1) + setupLamination : 0;
       const scoreTotal = scoreEnabled ? N * scoreCount * scoreCost + setupScore : 0;
       const foldingTotal = foldingEnabled ? N * foldingCost + setupFolding : 0;
       const diecutTotal = diecutEnabled ? N * diecutCost + setupDiecut + diecutStampCost : 0;
       const uvLacquerTotal = uvLacquerEnabled ? uvLacquerCost * totalSheets + setupUvLacquer : 0;
       const embossingTotal = embossingEnabled ? N * embossingCost + setupEmbossing + embossingKlischeCost : 0;
       const assemblyTotal = assemblyEnabled ? N * assemblyCost + setupAssembly : 0;
-      const cuttingTotal = cuttingEnabled ? N * cuttingCost + setupCutting : 0;
-      const total = paperTotal + printTotal + laminationTotal + scoreTotal + foldingTotal + diecutTotal + uvLacquerTotal + embossingTotal + assemblyTotal + cuttingTotal;
+      const total = paperTotal + printTotal + cuttingTotal + laminationTotal + scoreTotal +
+                    foldingTotal + diecutTotal + uvLacquerTotal + embossingTotal + assemblyTotal;
+      const roundedTotal = Math.round(total / 10) * 10;
       const row = document.createElement("tr");
       if (N_opt === 0 && N > 0) {
         row.innerHTML = `<td colspan="14">Не помещается</td>`;
@@ -613,8 +612,8 @@
         row.innerHTML = `
           <td>
             <button class="remember-btn" 
-              onclick='rememberResult("${sheet.name}", "${w}×${h}", "${s === 1 ? "4+0" : "4+4"}", "${paperType}", ${density}, ${N}, ${total.toFixed(2)},
-                ${laminationEnabled}, "${laminationSides}", ${scoreEnabled}, ${foldingEnabled}, ${diecutEnabled}, ${uvLacquerEnabled}, ${embossingEnabled}, ${assemblyEnabled}, ${cuttingEnabled})'>
+              onclick='rememberResult("${sheet.name}", "${w}×${h}", "${s === 1 ? "4+0" : "4+4"}", "${paperType}", ${density}, ${N}, ${roundedTotal.toFixed(2)},
+                ${cuttingEnabled}, ${laminationEnabled}, "${laminationSides}", ${scoreEnabled}, ${foldingEnabled}, ${diecutEnabled}, ${uvLacquerEnabled}, ${embossingEnabled}, ${assemblyEnabled})'>
               ➕ ${formatLabels[sheet.name]}
             </button>
           </td>
@@ -622,6 +621,7 @@
           <td>${totalSheets}</td>
           <td>${paperTotal.toFixed(2)}</td>
           <td>${printTotal.toFixed(2)}</td>
+          <td>${cuttingEnabled ? cuttingTotal.toFixed(2) : "—"}</td>
           <td>${laminationEnabled ? laminationTotal.toFixed(2) : "—"}</td>
           <td>${scoreEnabled ? scoreTotal.toFixed(2) : "—"}</td>
           <td>${foldingEnabled ? foldingTotal.toFixed(2) : "—"}</td>
@@ -629,185 +629,195 @@
           <td>${uvLacquerEnabled ? uvLacquerTotal.toFixed(2) : "—"}</td>
           <td>${embossingEnabled ? embossingTotal.toFixed(2) : "—"}</td>
           <td>${assemblyEnabled ? assemblyTotal.toFixed(2) : "—"}</td>
-          <td>${cuttingEnabled ? cuttingTotal.toFixed(2) : "—"}</td>
-          <td><b>${total.toFixed(2)}</b></td>
+          <td><b>${roundedTotal.toFixed(2)}</b></td>
         `;
       }
       resultsTable.appendChild(row);
-    });
+  });
+}
+function rememberResult(format, productSize, color, paperType, density, quantity, cost,
+                      cuttingEnabled, laminationEnabled, laminationSides,
+                      scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled) {
+  const key = JSON.stringify({ format, productSize, color, paperType, density, quantity, cost });
+  if (savedResults.some(r => JSON.stringify(r) === key)) {
+    alert("❗ Такой вариант уже запомнен.");
+    return;
   }
-  function rememberResult(format, productSize, color, paperType, density, quantity, cost,
-                      laminationEnabled, laminationSides,
-                      scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled, cuttingEnabled) {
-    const key = JSON.stringify({ format, productSize, color, paperType, density, quantity, cost });
-    if (savedResults.some(r => JSON.stringify(r) === key)) {
-      alert("❗ Такой вариант уже запомнен.");
-      return;
-    }
-    savedResults.push({
-      format,
-      productSize,
-      color,
-      paperType,
-      density,
-      quantity,
-      cost,
-      productType: selectedProductType,
-      laminationEnabled,
-      laminationSides,
-      scoreEnabled,
-      foldingEnabled,
-      diecutEnabled,
-      uvLacquerEnabled,
-      embossingEnabled,
-      assemblyEnabled,
-      cuttingEnabled
-    });
+  savedResults.push({
+    format, productSize, color, paperType, density, quantity, cost,
+    productType: selectedProductType,
+    cuttingEnabled, laminationEnabled, laminationSides,
+    scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled,
+    priceOverride: null // <-- новое поле
+  });
+  renderSavedList();
+}
+function renderSavedList() {
+  const listCost = document.getElementById("savedCalculations_cost");
+  const listPrice = document.getElementById("savedCalculations_price");
+  const listProfit = document.getElementById("savedCalculations_profit");
+  [listCost, listPrice, listProfit].forEach(list => {
+    while (list.firstChild) list.removeChild(list.firstChild);
+  });
+  if (savedResults.length === 0) {
+    document.getElementById("savedMessage_cost").style.display = "block";
+    document.getElementById("savedMessage_price").style.display = "block";
+    document.getElementById("savedMessage_profit").style.display = "block";
+    return;
+  }
+  document.getElementById("savedMessage_cost").style.display = "none";
+  document.getElementById("savedMessage_price").style.display = "none";
+  document.getElementById("savedMessage_profit").style.display = "none";
+  const markupFactor = (100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
+  savedResults.forEach((res, index) => {
+    const cost = res.cost;
+    const hasOverride = res.priceOverride !== null;
+    const priceWithMarkup = hasOverride ? res.priceOverride : cost * markupFactor;
+    const profit = priceWithMarkup - cost;
+    const postpress = [];
+    if (res.cuttingEnabled) postpress.push("Резка");
+    if (res.laminationEnabled) postpress.push("Ламинация " + res.laminationSides);
+    if (res.scoreEnabled) postpress.push("Биговка");
+    if (res.foldingEnabled) postpress.push("Фальцовка");
+    if (res.diecutEnabled) postpress.push("Вырубка");
+    if (res.uvLacquerEnabled) postpress.push("УФ-лак");
+    if (res.embossingEnabled) postpress.push("Тиснение");
+    if (res.assemblyEnabled) postpress.push("Сборка");
+    const postpressText = postpress.length ? ", " + postpress.join(", ") : "";
+    const title = res.productType ? `${res.productType}, ` : "";
+    // Себестоимость
+    const divCost = document.createElement("div");
+    divCost.className = "saved-item";
+    divCost.innerHTML = `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${cost} руб.</b><hr>`;
+    listCost.appendChild(divCost);
+    // Цена продажи (+ кнопка)
+    const divPrice = document.createElement("div");
+    divPrice.className = "saved-item";
+    divPrice.innerHTML = `
+      <strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → 
+      <b>${priceWithMarkup.toFixed(2)} руб.</b>
+      <button onclick='increasePrice(${index})' style="margin-left: 10px; padding: 4px 8px; font-size: 12px;">+500</button>
+      <hr>`;
+    listPrice.appendChild(divPrice);
+    // Прибыль
+    const divProfit = document.createElement("div");
+    divProfit.className = "saved-item";
+    divProfit.innerHTML = `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${profit.toFixed(2)} руб.</b><hr>`;
+    listProfit.appendChild(divProfit);
+  });
+}
+function increasePrice(index) {
+  if (savedResults[index]) {
+    const currentCost = savedResults[index].cost;
+    const currentPrice = savedResults[index].priceOverride !== null ?
+                         savedResults[index].priceOverride :
+                         currentCost * ((100 + Number(document.getElementById("markupPercent").value || 20)) / 100);
+    savedResults[index].priceOverride = currentPrice + 500;
     renderSavedList();
   }
-  function renderSavedList() {
-    const listCost = document.getElementById("savedCalculations_cost");
-    const listPrice = document.getElementById("savedCalculations_price");
-    const listProfit = document.getElementById("savedCalculations_profit");
-    [listCost, listPrice, listProfit].forEach(list => {
-      while (list.firstChild) list.removeChild(list.firstChild);
-    });
-    if (savedResults.length === 0) {
-      document.getElementById("savedMessage_cost").style.display = "block";
-      document.getElementById("savedMessage_price").style.display = "block";
-      document.getElementById("savedMessage_profit").style.display = "block";
-      return;
-    }
-    document.getElementById("savedMessage_cost").style.display = "none";
-    document.getElementById("savedMessage_price").style.display = "none";
-    document.getElementById("savedMessage_profit").style.display = "none";
-    const markupPercent = Number(document.getElementById("markupPercent").value || 20);
-    const markupFactor = (100 + markupPercent) / 100;
-    savedResults.forEach(res => {
-      const cost = res.cost;
-      const priceWithMarkup = cost * markupFactor;
-      const profit = priceWithMarkup - cost;
-      const postpress = [];
-      if (res.laminationEnabled) postpress.push("Ламинация " + res.laminationSides);
-      if (res.scoreEnabled) postpress.push("Биговка");
-      if (res.foldingEnabled) postpress.push("Фальцовка");
-      if (res.diecutEnabled) postpress.push("Вырубка");
-      if (res.uvLacquerEnabled) postpress.push("УФ-лак");
-      if (res.embossingEnabled) postpress.push("Тиснение");
-      if (res.assemblyEnabled) postpress.push("Сборка");
-      if (res.cuttingEnabled) postpress.push("Резка");
-      const postpressText = postpress.length > 0 ? ", " + postpress.join(", ") : "";
-      const title = res.productType ? `${res.productType}, ` : "";
-      const divCost = document.createElement("div");
-      divCost.className = "saved-item";
-      divCost.innerHTML = `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${cost.toFixed(2)} руб.</b><hr>`;
-      document.getElementById("savedCalculations_cost").appendChild(divCost);
-      const divPrice = document.createElement("div");
-      divPrice.className = "saved-item";
-      divPrice.innerHTML = `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${priceWithMarkup.toFixed(2)} руб.</b><hr>`;
-      document.getElementById("savedCalculations_price").appendChild(divPrice);
-      const divProfit = document.createElement("div");
-      divProfit.className = "saved-item";
-      divProfit.innerHTML = `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${profit.toFixed(2)} руб.</b><hr>`;
-      document.getElementById("savedCalculations_profit").appendChild(divProfit);
-    });
+}
+function getPaperTypeLabel(type) {
+  return type === "offset" ? "Офсетная" :
+         type === "matt" ? "Мелованная" :
+         type === "cardboard" ? "Картон" : type;
+}
+function copyToClipboard() {
+  if (savedResults.length === 0) {
+    alert("Нет данных для копирования");
+    return;
   }
-  function getPaperTypeLabel(type) {
-    return type === "offset" ? "Офсетная" :
-           type === "matt" ? "Мелованная" :
-           type === "cardboard" ? "Картон" : type;
-  }
-  function copyToClipboard() {
-    if (savedResults.length === 0) {
-      alert("Нет данных для копирования");
-      return;
-    }
-    let text = "";
-    savedResults.forEach(res => {
-      const postpress = [];
-      if (res.laminationEnabled) postpress.push("Ламинация " + res.laminationSides);
-      if (res.scoreEnabled) postpress.push("Биговка");
-      if (res.foldingEnabled) postpress.push("Фальцовка");
-      if (res.diecutEnabled) postpress.push("Вырубка");
-      if (res.uvLacquerEnabled) postpress.push("УФ-лак");
-      if (res.embossingEnabled) postpress.push("Тиснение");
-      if (res.assemblyEnabled) postpress.push("Сборка");
-      if (res.cuttingEnabled) postpress.push("Резка");
-      const postpressText = postpress.length > 0 ? ", " + postpress.join(", ") : "";
-      const title = res.productType ? `${res.productType}, ` : "";
-      text += `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${res.cost} руб.</b>
-`;
-    });
-    navigator.clipboard.writeText(text).then(() => {
-      alert("Данные скопированы!");
-    }).catch(() => {
-      alert("Ошибка копирования");
+  let text = "";
+  const markupPercent = Number(document.getElementById("markupPercent").value || 20);
+  const markupFactor = (100 + markupPercent) / 100;
+
+  savedResults.forEach(res => {
+    const cost = res.cost;
+    const hasOverride = res.priceOverride !== null;
+    const price = hasOverride ? res.priceOverride : cost * markupFactor;
+    const formattedPrice = price.toFixed(2);
+
+    const postpress = [];
+    if (res.cuttingEnabled) postpress.push("Резка");
+    if (res.laminationEnabled) postpress.push("Ламинация " + res.laminationSides);
+    if (res.scoreEnabled) postpress.push("Биговка");
+    if (res.foldingEnabled) postpress.push("Фальцовка");
+    if (res.diecutEnabled) postpress.push("Вырубка");
+    if (res.uvLacquerEnabled) postpress.push("УФ-лак");
+    if (res.embossingEnabled) postpress.push("Тиснение");
+    if (res.assemblyEnabled) postpress.push("Сборка");
+
+    const postpressText = postpress.length ? ", " + postpress.join(", ") : "";
+    const title = res.productType ? `${res.productType}, ` : "";
+
+    text += `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${formattedPrice} руб.</b>\n`;
+  });
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert("Цены скопированы в буфер обмена!");
+  }).catch(() => {
+    alert("Ошибка копирования");
+  });
+}
+function togglePrintSettings() {
+  const panel = document.getElementById("printSettingsPanel");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+  document.getElementById("btnPrint").textContent =
+    panel.style.display === "none" ? "⚙️ Печать ▼" : "⚙️ Печать ▲";
+}
+function updateQuantityButtons() {
+  const N = Number(document.getElementById("quantity").value);
+  document.querySelectorAll("#quantityButtons button").forEach(btn => {
+    const qty = Number(btn.dataset.qty || btn.textContent.replace(/\D+/g, ""));
+    btn.classList.toggle("selected", N === qty);
+  });
+  if (!document.getElementById("quantityButtons").children.length) {
+    const quantities = [50, 100, 200, 300, 500, 1000, 3000, 5000];
+    const container = document.getElementById("quantityButtons");
+    quantities.forEach(qty => {
+      const btn = document.createElement("button");
+      btn.textContent = qty + " шт.";
+      btn.dataset.qty = qty;
+      btn.onclick = () => {
+        document.getElementById("quantity").value = qty;
+        document.querySelectorAll("#quantityButtons button").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        onInputChange();
+      };
+      container.appendChild(btn);
     });
   }
-  function togglePrintSettings() {
-    const panel = document.getElementById("printSettingsPanel");
-    panel.style.display = panel.style.display === "none" ? "block" : "none";
-    document.getElementById("btnPrint").textContent =
-      panel.style.display === "none" ? "⚙️ Печать ▼" : "⚙️ Печать ▲";
-  }
-  function updateQuantityButtons() {
-    const N = Number(document.getElementById("quantity").value);
-    document.querySelectorAll("#quantityButtons button").forEach(btn => {
-      const qty = Number(btn.dataset.qty || btn.textContent.replace(/\D+/g, ""));
-      btn.classList.remove("selected");
-      if (N === qty) btn.classList.add("selected");
-    });
-    if (!document.getElementById("quantityButtons").children.length) {
-      const quantities = [50, 100, 200, 300, 500, 1000, 3000, 5000];
-      const container = document.getElementById("quantityButtons");
-      quantities.forEach(qty => {
-        const btn = document.createElement("button");
-        btn.textContent = qty + " шт.";
-        btn.dataset.qty = qty;
-        btn.onclick = () => {
-          document.getElementById("quantity").value = qty;
-          onInputChange();
-        };
-        container.appendChild(btn);
-      });
-    }
-  }
-  function selectProductType(btn) {
-    document.querySelectorAll("#productTypeButtons button").forEach(b => b.classList.remove("selected"));
-    btn.classList.add("selected");
-    selectedProductType = btn.getAttribute("data-type");
-  }
-  window.onload = () => {
-    updatePaperOptions();
-    updateFormatButtons();
-    updateQuantityButtons();
-    document.getElementById("width").oninput = onInputChange;
-    document.getElementById("height").oninput = onInputChange;
-    document.getElementById("quantity").oninput = onInputChange;
-    document.getElementById("paperType").onchange = () => {
-      updatePaperOptions();
-      onInputChange();
-    };
-    document.getElementById("laminationEnabled").onchange = updateSubFields;
-    document.getElementById("scoreEnabled").onchange = updateSubFields;
-    document.getElementById("foldingEnabled").onchange = updateSubFields;
-    document.getElementById("diecutEnabled").onchange = updateSubFields;
-    document.getElementById("uvLacquerEnabled").onchange = updateSubFields;
-    document.getElementById("embossingEnabled").onchange = updateSubFields;
-    document.getElementById("assemblyEnabled").onchange = updateSubFields;
-    document.getElementById("cuttingEnabled").onchange = updateSubFields;
-    document.querySelectorAll('input[name="laminationSides"]').forEach(radio => radio.onchange = onInputChange);
-    document.getElementById("scoreCountInput").oninput = onInputChange;
-    document.getElementById("foldingCostSetting").oninput = onInputChange;
-    document.getElementById("diecutCostSetting").oninput = onInputChange;
-    document.getElementById("uvLacquerCostSetting").oninput = onInputChange;
-    document.getElementById("embossingCostSetting").oninput = onInputChange;
-    document.getElementById("assemblyCostSetting").oninput = onInputChange;
-    document.getElementById("setupAssembly").oninput = onInputChange;
-    document.getElementById("cuttingCostSetting").oninput = onInputChange;
-    document.getElementById("setupCutting").oninput = onInputChange;
-    onInputChange();
-  };
+}
+function selectProductType(btn) {
+  document.querySelectorAll("#productTypeButtons button").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  selectedProductType = btn.getAttribute("data-type");
+}
+window.onload = () => {
+  updatePaperOptions();
+  updateFormatButtons();
+  updateQuantityButtons();
+  document.getElementById("width").oninput = onInputChange;
+  document.getElementById("height").oninput = onInputChange;
+  document.getElementById("quantity").oninput = onInputChange;
+  document.getElementById("paperType").onchange = updatePaperOptions;
+  document.getElementById("cuttingEnabled").onchange = updateSubFields;
+  document.getElementById("laminationEnabled").onchange = updateSubFields;
+  document.getElementById("scoreEnabled").onchange = updateSubFields;
+  document.getElementById("foldingEnabled").onchange = updateSubFields;
+  document.getElementById("diecutEnabled").onchange = updateSubFields;
+  document.getElementById("uvLacquerEnabled").onchange = updateSubFields;
+  document.getElementById("embossingEnabled").onchange = updateSubFields;
+  document.getElementById("assemblyEnabled").onchange = updateSubFields;
+  document.querySelectorAll('input[name="laminationSides"]').forEach(radio => radio.onchange = onInputChange);
+  document.getElementById("scoreCountInput").oninput = onInputChange;
+  document.getElementById("foldingCostSetting").oninput = onInputChange;
+  document.getElementById("diecutCostSetting").oninput = onInputChange;
+  document.getElementById("uvLacquerCostSetting").oninput = onInputChange;
+  document.getElementById("embossingCostSetting").oninput = onInputChange;
+  document.getElementById("assemblyCostSetting").oninput = onInputChange;
+  document.getElementById("setupAssembly").oninput = onInputChange;
+  onInputChange();
+};
 </script>
 </body>
 </html>
