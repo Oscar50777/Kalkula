@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -184,6 +183,10 @@
 </head>
 <body>
 <h2>Калькулятор себестоимости по форматам бумаги</h2>
+
+<!-- Кнопка ТПакеты -->
+<button onclick="presetTPackets()" style="margin-bottom: 15px; padding: 10px; font-size: 14px;">📦 ТПакеты</button>
+
 <!-- Сообщение -->
 <div id="statusMessage"></div>
 <!-- Запрос клиента -->
@@ -208,8 +211,8 @@
   <button onclick="togglePostpress()" id="btnPostpress">⚙️ Послепечатные работы ▼</button>
   <div id="postpressPanel" class="settings-panel">
     <!-- Резка -->
-    <label><input type="checkbox" id="cuttingEnabled" onchange="updateSubFields()"> Резка</label>
-    <div class="sub-field" id="cuttingOptions" style="display:none;">
+    <label><input type="checkbox" id="cuttingEnabled" checked onchange="updateSubFields()"> Резка</label>
+    <div class="sub-field" id="cuttingOptions">
       <label>Стоимость резки за лист:</label>
       <input type="number" id="cuttingCostSetting" value="1" oninput="onInputChange()">
       <label>Настройка резки:</label>
@@ -364,7 +367,10 @@
       <button type="button" onclick="selectProductType(this)" data-type="Открытки">Открытки</button>
       <button type="button" onclick="selectProductType(this)" data-type="Блокноты">Блокноты</button>
       <button type="button" onclick="selectProductType(this)" data-type="Наклейки бумажные">Наклейки бумажные</button>
-      <button type="button" onclick="selectProductType(this)" data-type="Фирменные бланки, конверты">Фирменные бланки, конверты</button>
+      <button type="button" onclick="selectProductType(this)" data-type="Бланки">Бланки</button>
+      <button type="button" onclick="selectProductType(this)" data-type="Карточки">Карточки</button>
+      <button type="button" onclick="selectProductType(this)" data-type="Бирки">Бирки</button>
+      <button type="button" onclick="selectProductType(this)" data-type="Хенгеры">Хенгеры</button>
       <button type="button" onclick="selectProductType(this)" data-type="Дипломы">Дипломы</button>
     </div>
   </div>
@@ -426,219 +432,230 @@
   </div>
 </div>
 <script>
-  let s = 1;
-  const formatLabels = {
-    Z: "Цифра SRA3",
-    E: "Цифра B2",
-    A: "Офсет 50×70",
-    B: "Офсет 47×62",
-    R: "Офсет 47×65",
-    M: "Офсет 52×72"
-  };
-  const sheetFormats = [
-    { name: "Z", paperSize: { w: 320, h: 450 }, printArea: { w: 310, h: 430 } },
-    { name: "E", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } },
-    { name: "B", paperSize: { w: 470, h: 620 }, printArea: { w: 450, h: 610 } },
-    { name: "R", paperSize: { w: 470, h: 650 }, printArea: { w: 450, h: 640 } },
-    { name: "A", paperSize: { w: 500, h: 700 }, printArea: { w: 480, h: 690 } },
-    { name: "M", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } }
-  ];
-  const densityMap = {
-    offset: [80, 100, 120, 160, 190],
-    matt: [90, 115, 130, 150, 170, 200, 250, 300],
-    cardboard: [215, 230, 250, 270, 300, 320, 350]
-  };
-  let savedResults = [];
-  let selectedProductType = "";
-  function setSides(val) {
-    s = val;
-    document.querySelectorAll(".side-buttons button").forEach(btn => btn.classList.remove("selected"));
-    if (val === 1) {
-      document.getElementById("btn_4_0").classList.add("selected");
-    } else {
-      document.getElementById("btn_4_4").classList.add("selected");
+let s = 1;
+const formatLabels = {
+  Z: "Цифра SRA3",
+  E: "Цифра B2",
+  A: "Офсет 50×70",
+  B: "Офсет 47×62",
+  R: "Офсет 47×65",
+  M: "Офсет 52×72"
+};
+const sheetFormats = [
+  { name: "Z", paperSize: { w: 320, h: 450 }, printArea: { w: 310, h: 430 } },
+  { name: "E", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } },
+  { name: "B", paperSize: { w: 470, h: 620 }, printArea: { w: 450, h: 610 } },
+  { name: "R", paperSize: { w: 470, h: 650 }, printArea: { w: 450, h: 640 } },
+  { name: "A", paperSize: { w: 500, h: 700 }, printArea: { w: 480, h: 690 } },
+  { name: "M", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } }
+];
+const densityMap = {
+  offset: [80, 100, 120, 160, 190],
+  matt: [90, 115, 130, 150, 170, 200, 250, 300],
+  cardboard: [215, 230, 250, 270, 300, 320, 350]
+};
+let savedResults = [];
+let selectedProductType = "";
+
+function setSides(val) {
+  s = val;
+  document.querySelectorAll(".side-buttons button").forEach(btn => btn.classList.remove("selected"));
+  if (val === 1) {
+    document.getElementById("btn_4_0").classList.add("selected");
+  } else {
+    document.getElementById("btn_4_4").classList.add("selected");
+  }
+  onInputChange();
+}
+
+function setFormat(sizeStr) {
+  const size = sizeStr.split("×");
+  document.getElementById("width").value = size[0];
+  document.getElementById("height").value = size[1];
+  updateFormatButtons();
+  onInputChange();
+}
+
+function updateFormatButtons() {
+  const currentW = Number(document.getElementById("width").value);
+  const currentH = Number(document.getElementById("height").value);
+  document.querySelectorAll("#formatButtons button").forEach(btn => {
+    const btnText = btn.textContent.trim().match(/(\d+)×(\d+)/)?.[0] || "";
+    btn.classList.remove("selected");
+    if (btnText === `${currentW}×${currentH}` || btnText === `${currentH}×${currentW}`) {
+      btn.classList.add("selected");
     }
-    onInputChange();
-  }
-  function setFormat(sizeStr) {
-    const size = sizeStr.split("×");
-    document.getElementById("width").value = size[0];
-    document.getElementById("height").value = size[1];
-    updateFormatButtons();
-    onInputChange();
-  }
-  function updateFormatButtons() {
-    const currentW = Number(document.getElementById("width").value);
-    const currentH = Number(document.getElementById("height").value);
-    document.querySelectorAll("#formatButtons button").forEach(btn => {
-      const btnText = btn.textContent.trim().match(/(\d+)×(\d+)/)?.[0] || "";
-      btn.classList.remove("selected");
-      if (btnText === `${currentW}×${currentH}` || btnText === `${currentH}×${currentW}`) {
-        btn.classList.add("selected");
-      }
-    });
-  }
-  function updatePaperOptions() {
-    const paperType = document.getElementById("paperType").value;
-    const optionsDiv = document.getElementById("paperOptions");
-    optionsDiv.innerHTML = "";
-    const densities = densityMap[paperType] || [];
-    if (!densities.length) return;
-    densities.forEach(d => {
-      const btn = document.createElement("button");
-      btn.textContent = d + " г/м²";
-      btn.onclick = () => {
-        document.querySelectorAll("#paperOptions button").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        document.getElementById("densityInput").value = d;
-        const price = getPaperPriceByTypeAndDensity(paperType, d);
-        document.getElementById("paperPricePerKg").value = price;
-        onInputChange();
-      };
-      optionsDiv.appendChild(btn);
-    });
-    if (optionsDiv.children.length > 0) optionsDiv.children[0].click();
-  }
-  function getPaperPriceByTypeAndDensity(paperType, density) {
-    if (paperType === "offset") return 125;
-    if (paperType === "matt") return density <= 200 ? 135 : 155;
-    if (paperType === "cardboard") return 160;
-    return 0;
-  }
-  function togglePostpress() {
-    const panel = document.getElementById("postpressPanel");
-    panel.style.display = panel.style.display === "none" ? "block" : "none";
-    document.getElementById("btnPostpress").textContent =
-      panel.style.display === "none" ? "⚙️ Послепечатные работы ▼" : "⚙️ Послепечатные работы ▲";
-  }
-  function updateSubFields() {
-    const fields = [
-      { checkboxId: 'laminationEnabled', containerId: 'laminationOptions' },
-      { checkboxId: 'scoreEnabled', containerId: 'scoreOptions' },
-      { checkboxId: 'foldingEnabled', containerId: 'foldingOptions' },
-      { checkboxId: 'diecutEnabled', containerId: 'diecutOptions' },
-      { checkboxId: 'uvLacquerEnabled', containerId: 'uvLacquerOptions' },
-      { checkboxId: 'embossingEnabled', containerId: 'embossingOptions' },
-      { checkboxId: 'assemblyEnabled', containerId: 'assemblyOptions' },
-      { checkboxId: 'cuttingEnabled', containerId: 'cuttingOptions' }
-    ];
-    fields.forEach(({ checkboxId, containerId }) => {
-      const isChecked = document.getElementById(checkboxId)?.checked ?? false;
-      document.getElementById(containerId).style.display = isChecked ? "block" : "none";
-    });
-    onInputChange();
-  }
-  function onInputChange() {
-    calculate();
-    renderSavedList();
-  }
-  function calculate() {
-    const resultsTable = document.getElementById("resultsTable");
-    resultsTable.innerHTML = "";
-    const w = Number(document.getElementById("width").value);
-    const h = Number(document.getElementById("height").value);
-    const N = Number(document.getElementById("quantity").value);
-    const density = Number(document.getElementById("densityInput").value);
-    const paperPricePerKg = Number(document.getElementById("paperPricePerKg").value);
-    const paperType = document.getElementById("paperType").value;
-    const c_p_Z = Number(document.getElementById("printCostZ").value);
-    const P_Z = Number(document.getElementById("setupPrintZ").value);
-    const c_p_E = Number(document.getElementById("printCostE").value);
-    const P_E = Number(document.getElementById("setupPrintE").value);
-    const c_p_Offset = Number(document.getElementById("printCostOffsetA2").value);
-    const P_Offset = Number(document.getElementById("setupPrintOffsetA2").value);
-    const cuttingEnabled = document.getElementById("cuttingEnabled")?.checked ?? false;
-    const cuttingCost = Number(document.getElementById("cuttingCostSetting").value) || 0;
-    const setupCutting = Number(document.getElementById("setupCutting").value) || 0;
-    const laminationEnabled = document.getElementById("laminationEnabled")?.checked ?? false;
-    const laminationCost = Number(document.getElementById("laminationCost").value) || 0;
-    const setupLamination = Number(document.getElementById("setupLamination").value) || 0;
-    const laminationSides = document.querySelector('input[name="laminationSides"]:checked')?.value ?? "1+0";
-    const scoreEnabled = document.getElementById("scoreEnabled")?.checked ?? false;
-    const scoreCost = Number(document.getElementById("scoreCost").value) || 0;
-    const setupScore = Number(document.getElementById("setupScore").value) || 0;
-    const scoreCount = Number(document.getElementById("scoreCountInput").value) || 0;
-    const foldingEnabled = document.getElementById("foldingEnabled")?.checked ?? false;
-    const foldingCost = Number(document.getElementById("foldingCostSetting").value) || 0;
-    const setupFolding = Number(document.getElementById("setupFolding").value) || 0;
-    const diecutEnabled = document.getElementById("diecutEnabled")?.checked ?? false;
-    const diecutCost = Number(document.getElementById("diecutCostSetting").value) || 0;
-    const setupDiecut = Number(document.getElementById("setupDiecut").value) || 0;
-    const diecutStampCost = Number(document.getElementById("diecutStampCostSetting").value) || 0;
-    const uvLacquerEnabled = document.getElementById("uvLacquerEnabled")?.checked ?? false;
-    const uvLacquerCost = Number(document.getElementById("uvLacquerCostSetting").value) || 0;
-    const setupUvLacquer = Number(document.getElementById("setupUvLacquer").value) || 0;
-    const embossingEnabled = document.getElementById("embossingEnabled")?.checked ?? false;
-    const embossingCost = Number(document.getElementById("embossingCostSetting").value) || 0;
-    const setupEmbossing = Number(document.getElementById("setupEmbossing").value) || 0;
-    const embossingKlischeCost = Number(document.getElementById("embossingKlischeCostSetting").value) || 0;
-    const assemblyEnabled = document.getElementById("assemblyEnabled")?.checked ?? false;
-    const assemblyCost = Number(document.getElementById("assemblyCostSetting").value) || 0;
-    const setupAssembly = Number(document.getElementById("setupAssembly").value) || 0;
-    sheetFormats.forEach(sheet => {
-      const W = w + 4;
-      const H = h + 4;
-      const printW = sheet.printArea.w;
-      const printH = sheet.printArea.h;
-      const v1 = Math.floor(printW / W) * Math.floor(printH / H);
-      const v2 = Math.floor(printW / H) * Math.floor(printH / W);
-      const N_opt = Math.max(v1, v2);
-      const baseSheets = N > 0 ? Math.ceil(N / N_opt) : 0;
-      const extraSheets = ["Z", "E"].includes(sheet.name) ? 3 : 250;
-      const totalSheets = baseSheets + extraSheets;
-      const areaSheet = (sheet.paperSize.w / 1000) * (sheet.paperSize.h / 1000);
-      const weightSheet = areaSheet * (density / 1000);
-      const paperTotal = weightSheet * paperPricePerKg * totalSheets;
-      const printCostPerSheet = sheet.name === "Z" ? c_p_Z :
-                               sheet.name === "E" ? c_p_E : c_p_Offset;
-      const setupPrintValue = sheet.name === "Z" ? P_Z :
-                             sheet.name === "E" ? P_E : P_Offset;
-      const printTotal = printCostPerSheet * totalSheets * s + setupPrintValue;
-      const cuttingTotal = cuttingEnabled ? cuttingCost * totalSheets + setupCutting : 0;
-      const laminationTotal = laminationEnabled ?
-        laminationCost * totalSheets * (laminationSides === "1+1" ? 2 : 1) + setupLamination : 0;
-      const scoreTotal = scoreEnabled ? N * scoreCount * scoreCost + setupScore : 0;
-      const foldingTotal = foldingEnabled ? N * foldingCost + setupFolding : 0;
-      const diecutTotal = diecutEnabled ? N * diecutCost + setupDiecut + diecutStampCost : 0;
-      const uvLacquerTotal = uvLacquerEnabled ? uvLacquerCost * totalSheets + setupUvLacquer : 0;
-      const embossingTotal = embossingEnabled ? N * embossingCost + setupEmbossing + embossingKlischeCost : 0;
-      const assemblyTotal = assemblyEnabled ? N * assemblyCost + setupAssembly : 0;
-      const total = paperTotal + printTotal + cuttingTotal + laminationTotal + scoreTotal +
-                    foldingTotal + diecutTotal + uvLacquerTotal + embossingTotal + assemblyTotal;
-      const roundedTotal = Math.round(total / 10) * 10;
-      const row = document.createElement("tr");
-      if (N_opt === 0 && N > 0) {
-        row.innerHTML = `<td colspan="14">Не помещается</td>`;
-      } else {
-        row.innerHTML = `
-          <td>
-            <button class="remember-btn" 
-              onclick='rememberResult("${sheet.name}", "${w}×${h}", "${s === 1 ? "4+0" : "4+4"}", "${paperType}", ${density}, ${N}, ${roundedTotal.toFixed(2)},
-                ${cuttingEnabled}, ${laminationEnabled}, "${laminationSides}", ${scoreEnabled}, ${foldingEnabled}, ${diecutEnabled}, ${uvLacquerEnabled}, ${embossingEnabled}, ${assemblyEnabled})'>
-              ➕ ${formatLabels[sheet.name]}
-            </button>
-          </td>
-          <td>${N_opt}</td>
-          <td>${totalSheets}</td>
-          <td>${paperTotal.toFixed(2)}</td>
-          <td>${printTotal.toFixed(2)}</td>
-          <td>${cuttingEnabled ? cuttingTotal.toFixed(2) : "—"}</td>
-          <td>${laminationEnabled ? laminationTotal.toFixed(2) : "—"}</td>
-          <td>${scoreEnabled ? scoreTotal.toFixed(2) : "—"}</td>
-          <td>${foldingEnabled ? foldingTotal.toFixed(2) : "—"}</td>
-          <td>${diecutEnabled ? diecutTotal.toFixed(2) : "—"}</td>
-          <td>${uvLacquerEnabled ? uvLacquerTotal.toFixed(2) : "—"}</td>
-          <td>${embossingEnabled ? embossingTotal.toFixed(2) : "—"}</td>
-          <td>${assemblyEnabled ? assemblyTotal.toFixed(2) : "—"}</td>
-          <td><b>${roundedTotal.toFixed(2)}</b></td>
-        `;
-      }
-      resultsTable.appendChild(row);
   });
 }
+
+function updatePaperOptions() {
+  const paperType = document.getElementById("paperType").value;
+  const optionsDiv = document.getElementById("paperOptions");
+  optionsDiv.innerHTML = "";
+  const densities = densityMap[paperType] || [];
+  if (!densities.length) return;
+  densities.forEach(d => {
+    const btn = document.createElement("button");
+    btn.textContent = d + " г/м²";
+    btn.onclick = () => {
+      document.querySelectorAll("#paperOptions button").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      document.getElementById("densityInput").value = d;
+      const price = getPaperPriceByTypeAndDensity(paperType, d);
+      document.getElementById("paperPricePerKg").value = price;
+      onInputChange();
+    };
+    optionsDiv.appendChild(btn);
+  });
+  if (optionsDiv.children.length > 0) optionsDiv.children[0].click();
+}
+
+function getPaperPriceByTypeAndDensity(paperType, density) {
+  if (paperType === "offset") return 125;
+  if (paperType === "matt") return density <= 200 ? 135 : 155;
+  if (paperType === "cardboard") return 160;
+  return 0;
+}
+
+function togglePostpress() {
+  const panel = document.getElementById("postpressPanel");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+  document.getElementById("btnPostpress").textContent =
+    panel.style.display === "none" ? "⚙️ Послепечатные работы ▼" : "⚙️ Послепечатные работы ▲";
+}
+
+function updateSubFields() {
+  const fields = [
+    { checkboxId: 'laminationEnabled', containerId: 'laminationOptions' },
+    { checkboxId: 'scoreEnabled', containerId: 'scoreOptions' },
+    { checkboxId: 'foldingEnabled', containerId: 'foldingOptions' },
+    { checkboxId: 'diecutEnabled', containerId: 'diecutOptions' },
+    { checkboxId: 'uvLacquerEnabled', containerId: 'uvLacquerOptions' },
+    { checkboxId: 'embossingEnabled', containerId: 'embossingOptions' },
+    { checkboxId: 'assemblyEnabled', containerId: 'assemblyOptions' },
+    { checkboxId: 'cuttingEnabled', containerId: 'cuttingOptions' }
+  ];
+  fields.forEach(({ checkboxId, containerId }) => {
+    const isChecked = document.getElementById(checkboxId)?.checked ?? false;
+    document.getElementById(containerId).style.display = isChecked ? "block" : "none";
+  });
+  onInputChange();
+}
+
+function onInputChange() {
+  calculate();
+  renderSavedList();
+}
+
+function calculate() {
+  const resultsTable = document.getElementById("resultsTable");
+  resultsTable.innerHTML = "";
+  const w = Number(document.getElementById("width").value);
+  const h = Number(document.getElementById("height").value);
+  const N = Number(document.getElementById("quantity").value);
+  const density = Number(document.getElementById("densityInput").value);
+  const paperPricePerKg = Number(document.getElementById("paperPricePerKg").value);
+  const paperType = document.getElementById("paperType").value;
+  const c_p_Z = Number(document.getElementById("printCostZ").value);
+  const P_Z = Number(document.getElementById("setupPrintZ").value);
+  const c_p_E = Number(document.getElementById("printCostE").value);
+  const P_E = Number(document.getElementById("setupPrintE").value);
+  const c_p_Offset = Number(document.getElementById("printCostOffsetA2").value);
+  const P_Offset = Number(document.getElementById("setupPrintOffsetA2").value);
+  const cuttingEnabled = document.getElementById("cuttingEnabled")?.checked ?? false;
+  const cuttingCost = Number(document.getElementById("cuttingCostSetting").value) || 0;
+  const setupCutting = Number(document.getElementById("setupCutting").value) || 0;
+  const laminationEnabled = document.getElementById("laminationEnabled")?.checked ?? false;
+  const laminationCost = Number(document.getElementById("laminationCost").value) || 0;
+  const setupLamination = Number(document.getElementById("setupLamination").value) || 0;
+  const laminationSides = document.querySelector('input[name="laminationSides"]:checked')?.value ?? "1+0";
+  const scoreEnabled = document.getElementById("scoreEnabled")?.checked ?? false;
+  const scoreCost = Number(document.getElementById("scoreCost").value) || 0;
+  const setupScore = Number(document.getElementById("setupScore").value) || 0;
+  const scoreCount = Number(document.getElementById("scoreCountInput").value) || 0;
+  const foldingEnabled = document.getElementById("foldingEnabled")?.checked ?? false;
+  const foldingCost = Number(document.getElementById("foldingCostSetting").value) || 0;
+  const setupFolding = Number(document.getElementById("setupFolding").value) || 0;
+  const diecutEnabled = document.getElementById("diecutEnabled")?.checked ?? false;
+  const diecutCost = Number(document.getElementById("diecutCostSetting").value) || 0;
+  const setupDiecut = Number(document.getElementById("setupDiecut").value) || 0;
+  const diecutStampCost = Number(document.getElementById("diecutStampCostSetting").value) || 0;
+  const uvLacquerEnabled = document.getElementById("uvLacquerEnabled")?.checked ?? false;
+  const uvLacquerCost = Number(document.getElementById("uvLacquerCostSetting").value) || 0;
+  const setupUvLacquer = Number(document.getElementById("setupUvLacquer").value) || 0;
+  const embossingEnabled = document.getElementById("embossingEnabled")?.checked ?? false;
+  const embossingCost = Number(document.getElementById("embossingCostSetting").value) || 0;
+  const setupEmbossing = Number(document.getElementById("setupEmbossing").value) || 0;
+  const embossingKlischeCost = Number(document.getElementById("embossingKlischeCostSetting").value) || 0;
+  const assemblyEnabled = document.getElementById("assemblyEnabled")?.checked ?? false;
+  const assemblyCost = Number(document.getElementById("assemblyCostSetting").value) || 0;
+  const setupAssembly = Number(document.getElementById("setupAssembly").value) || 0;
+
+  sheetFormats.forEach(sheet => {
+    const W = w + 4;
+    const H = h + 4;
+    const printW = sheet.printArea.w;
+    const printH = sheet.printArea.h;
+    const v1 = Math.floor(printW / W) * Math.floor(printH / H);
+    const v2 = Math.floor(printW / H) * Math.floor(printH / W);
+    const N_opt = Math.max(v1, v2);
+    const baseSheets = N > 0 ? Math.ceil(N / N_opt) : 0;
+    const extraSheets = ["Z", "E"].includes(sheet.name) ? 3 : 250;
+    const totalSheets = baseSheets + extraSheets;
+    const areaSheet = (sheet.paperSize.w / 1000) * (sheet.paperSize.h / 1000);
+    const weightSheet = areaSheet * (density / 1000);
+    const paperTotal = weightSheet * paperPricePerKg * totalSheets;
+    const printCostPerSheet = sheet.name === "Z" ? c_p_Z :
+                             sheet.name === "E" ? c_p_E : c_p_Offset;
+    const setupPrintValue = sheet.name === "Z" ? P_Z :
+                           sheet.name === "E" ? P_E : P_Offset;
+    const printTotal = printCostPerSheet * totalSheets * s + setupPrintValue;
+    const cuttingTotal = cuttingEnabled ? cuttingCost * totalSheets + setupCutting : 0;
+    const laminationTotal = laminationEnabled ?
+      laminationCost * totalSheets * (laminationSides === "1+1" ? 2 : 1) + setupLamination : 0;
+    const scoreTotal = scoreEnabled ? N * scoreCount * scoreCost + setupScore : 0;
+    const foldingTotal = foldingEnabled ? N * foldingCost + setupFolding : 0;
+    const diecutTotal = diecutEnabled ? N * diecutCost + setupDiecut + diecutStampCost : 0;
+    const uvLacquerTotal = uvLacquerEnabled ? uvLacquerCost * totalSheets + setupUvLacquer : 0;
+    const embossingTotal = embossingEnabled ? N * embossingCost + setupEmbossing + embossingKlischeCost : 0;
+    const assemblyTotal = assemblyEnabled ? N * assemblyCost + setupAssembly : 0;
+    const total = paperTotal + printTotal + cuttingTotal + laminationTotal + scoreTotal +
+                  foldingTotal + diecutTotal + uvLacquerTotal + embossingTotal + assemblyTotal;
+    const roundedTotal = Math.round(total / 10) * 10;
+    const row = document.createElement("tr");
+    if (N_opt === 0 && N > 0) {
+      row.innerHTML = `<td colspan="14">Не помещается</td>`;
+    } else {
+      row.innerHTML = `
+        <td>
+          <button class="remember-btn" 
+            onclick='rememberResult("${sheet.name}", "${w}×${h}", "${s === 1 ? "4+0" : "4+4"}", "${paperType}", ${density}, ${N}, ${roundedTotal.toFixed(2)},
+              ${cuttingEnabled}, ${laminationEnabled}, "${laminationSides}", ${scoreEnabled}, ${foldingEnabled}, ${diecutEnabled}, ${uvLacquerEnabled}, ${embossingEnabled}, ${assemblyEnabled})'>
+            ➕ ${formatLabels[sheet.name]}
+          </button>
+        </td>
+        <td>${N_opt}</td>
+        <td>${totalSheets}</td>
+        <td>${paperTotal.toFixed(2)}</td>
+        <td>${printTotal.toFixed(2)}</td>
+        <td>${cuttingEnabled ? cuttingTotal.toFixed(2) : "—"}</td>
+        <td>${laminationEnabled ? laminationTotal.toFixed(2) : "—"}</td>
+        <td>${scoreEnabled ? scoreTotal.toFixed(2) : "—"}</td>
+        <td>${foldingEnabled ? foldingTotal.toFixed(2) : "—"}</td>
+        <td>${diecutEnabled ? diecutTotal.toFixed(2) : "—"}</td>
+        <td>${uvLacquerEnabled ? uvLacquerTotal.toFixed(2) : "—"}</td>
+        <td>${embossingEnabled ? embossingTotal.toFixed(2) : "—"}</td>
+        <td>${assemblyEnabled ? assemblyTotal.toFixed(2) : "—"}</td>
+        <td><b>${roundedTotal.toFixed(2)}</b></td>
+      `;
+    }
+    resultsTable.appendChild(row);
+  });
+}
+
 function rememberResult(format, productSize, color, paperType, density, quantity, cost,
-                      cuttingEnabled, laminationEnabled, laminationSides,
-                      scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled) {
+                        cuttingEnabled, laminationEnabled, laminationSides,
+                        scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled) {
   const key = JSON.stringify({ format, productSize, color, paperType, density, quantity, cost });
   if (savedResults.some(r => JSON.stringify(r) === key)) {
     alert("❗ Такой вариант уже запомнен.");
@@ -653,6 +670,7 @@ function rememberResult(format, productSize, color, paperType, density, quantity
   });
   renderSavedList();
 }
+
 function renderSavedList() {
   const listCost = document.getElementById("savedCalculations_cost");
   const listPrice = document.getElementById("savedCalculations_price");
@@ -707,6 +725,7 @@ function renderSavedList() {
     listProfit.appendChild(divProfit);
   });
 }
+
 function increasePrice(index) {
   if (savedResults[index]) {
     const currentCost = savedResults[index].cost;
@@ -717,11 +736,13 @@ function increasePrice(index) {
     renderSavedList();
   }
 }
+
 function getPaperTypeLabel(type) {
   return type === "offset" ? "Офсетная" :
          type === "matt" ? "Мелованная" :
          type === "cardboard" ? "Картон" : type;
 }
+
 function copyToClipboard() {
   if (savedResults.length === 0) {
     alert("Нет данных для копирования");
@@ -730,13 +751,11 @@ function copyToClipboard() {
   let text = "";
   const markupPercent = Number(document.getElementById("markupPercent").value || 20);
   const markupFactor = (100 + markupPercent) / 100;
-
   savedResults.forEach(res => {
     const cost = res.cost;
     const hasOverride = res.priceOverride !== null;
     const price = hasOverride ? res.priceOverride : cost * markupFactor;
     const formattedPrice = price.toFixed(2);
-
     const postpress = [];
     if (res.cuttingEnabled) postpress.push("Резка");
     if (res.laminationEnabled) postpress.push("Ламинация " + res.laminationSides);
@@ -746,11 +765,9 @@ function copyToClipboard() {
     if (res.uvLacquerEnabled) postpress.push("УФ-лак");
     if (res.embossingEnabled) postpress.push("Тиснение");
     if (res.assemblyEnabled) postpress.push("Сборка");
-
     const postpressText = postpress.length ? ", " + postpress.join(", ") : "";
     const title = res.productType ? `${res.productType}, ` : "";
-
-    text += `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${formattedPrice} руб.</b>\n`;
+    text += `${title}${res.productSize}, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → ${formattedPrice} руб.\n`;
   });
 
   navigator.clipboard.writeText(text).then(() => {
@@ -759,12 +776,14 @@ function copyToClipboard() {
     alert("Ошибка копирования");
   });
 }
+
 function togglePrintSettings() {
   const panel = document.getElementById("printSettingsPanel");
   panel.style.display = panel.style.display === "none" ? "block" : "none";
   document.getElementById("btnPrint").textContent =
     panel.style.display === "none" ? "⚙️ Печать ▼" : "⚙️ Печать ▲";
 }
+
 function updateQuantityButtons() {
   const N = Number(document.getElementById("quantity").value);
   document.querySelectorAll("#quantityButtons button").forEach(btn => {
@@ -788,11 +807,62 @@ function updateQuantityButtons() {
     });
   }
 }
+
 function selectProductType(btn) {
   document.querySelectorAll("#productTypeButtons button").forEach(b => b.classList.remove("selected"));
   btn.classList.add("selected");
   selectedProductType = btn.getAttribute("data-type");
 }
+
+function presetTPackets() {
+  // Установить размер 99×210 мм
+  document.getElementById("width").value = "99";
+  document.getElementById("height").value = "210";
+  updateFormatButtons();
+
+  // Выбрать мелованную бумагу
+  const paperTypeSelect = document.getElementById("paperType");
+  paperTypeSelect.value = "matt";
+  updatePaperOptions(); // обновляем опции плотности
+
+  // Установить плотность 200 г/м²
+  setTimeout(() => {
+    const buttons = document.querySelectorAll("#paperOptions button");
+    for (let btn of buttons) {
+      if (btn.textContent.includes("200")) {
+        btn.click();
+        break;
+      }
+    }
+  }, 100); // задержка нужна, чтобы опции успели подгрузиться
+
+  // Включить вырубку
+  const diecutCheckbox = document.getElementById("diecutEnabled");
+  if (!diecutCheckbox.checked) {
+    diecutCheckbox.checked = true;
+    document.getElementById("diecutOptions").style.display = "block";
+  }
+
+  // Включить одностороннюю ламинацию
+  const laminationCheckbox = document.getElementById("laminationEnabled");
+  if (!laminationCheckbox.checked) {
+    laminationCheckbox.checked = true;
+    document.getElementById("laminationOptions").style.display = "block";
+  }
+  document.querySelector('input[name="laminationSides"][value="1+0"]').checked = true;
+
+  // Установить сборку
+  const assemblyCheckbox = document.getElementById("assemblyEnabled");
+  if (!assemblyCheckbox.checked) {
+    assemblyCheckbox.checked = true;
+    document.getElementById("assemblyOptions").style.display = "block";
+  }
+  document.getElementById("assemblyCostSetting").value = 50;
+
+  // Применить изменения
+  onInputChange();
+}
+
 window.onload = () => {
   updatePaperOptions();
   updateFormatButtons();
