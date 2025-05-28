@@ -600,7 +600,12 @@ function calculate() {
     const v1 = Math.floor(printW / W) * Math.floor(printH / H);
     const v2 = Math.floor(printW / H) * Math.floor(printH / W);
     const N_opt = Math.max(v1, v2);
-    const baseSheets = N > 0 ? Math.ceil(N / N_opt) : 0;
+    let baseSheets = N > 0 ? Math.ceil(N / N_opt) : 0;
+
+// Если выбран тип "Пакет А3", удваиваем количество листов
+if (selectedProductType === "Пакет А3") {
+  baseSheets *= 2;
+}
     const extraSheets = ["Z", "E"].includes(sheet.name) ? 3 : 250;
     const totalSheets = baseSheets + extraSheets;
     const areaSheet = (sheet.paperSize.w / 1000) * (sheet.paperSize.h / 1000);
