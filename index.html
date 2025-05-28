@@ -127,21 +127,23 @@
       font-size: 14px;
       margin-bottom: 10px;
     }
-   #productTypeButtons {
-  display: inline-grid;
-  grid-template-columns: repeat(auto-fill, minmax(max-content, 1fr));
-  gap: 8px;
-  margin-top: 15px;
-}
+    #productTypeButtons {
+      display: inline-grid;
+      grid-template-columns: repeat(auto-fill, minmax(max-content, 1fr));
+      gap: 8px;
+      margin-top: 15px;
+    }
     #productTypeButtons button {
-  padding: 6px 10px;
-  font-size: 12px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  cursor: pointer;
-  white-space: nowrap;
-  min-width: max-content;
-}
+      padding: 6px 10px;
+      font-size: 12px;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: max-content;
+    }
     #productTypeButtons button.selected {
       background-color: #007BFF;
       color: white;
@@ -480,7 +482,6 @@ function setSides(val) {
   }
   onInputChange();
 }
-
 function setFormat(sizeStr) {
   const size = sizeStr.split("×");
   document.getElementById("width").value = size[0];
@@ -488,7 +489,6 @@ function setFormat(sizeStr) {
   updateFormatButtons();
   onInputChange();
 }
-
 function updateFormatButtons() {
   const currentW = Number(document.getElementById("width").value);
   const currentH = Number(document.getElementById("height").value);
@@ -500,7 +500,6 @@ function updateFormatButtons() {
     }
   });
 }
-
 function updatePaperOptions() {
   const paperType = document.getElementById("paperType").value;
   const optionsDiv = document.getElementById("paperOptions");
@@ -522,21 +521,18 @@ function updatePaperOptions() {
   });
   if (optionsDiv.children.length > 0) optionsDiv.children[0].click();
 }
-
 function getPaperPriceByTypeAndDensity(paperType, density) {
   if (paperType === "offset") return 125;
   if (paperType === "matt") return density <= 200 ? 135 : 155;
   if (paperType === "cardboard") return 160;
   return 0;
 }
-
 function togglePostpress() {
   const panel = document.getElementById("postpressPanel");
   panel.style.display = panel.style.display === "none" ? "block" : "none";
   document.getElementById("btnPostpress").textContent =
     panel.style.display === "none" ? "⚙️ Послепечатные работы ▼" : "⚙️ Послепечатные работы ▲";
 }
-
 function updateSubFields() {
   const fields = [
     { checkboxId: 'laminationEnabled', containerId: 'laminationOptions' },
@@ -554,12 +550,10 @@ function updateSubFields() {
   });
   onInputChange();
 }
-
 function onInputChange() {
   calculate();
   renderSavedList();
 }
-
 function calculate() {
   const resultsTable = document.getElementById("resultsTable");
   resultsTable.innerHTML = "";
@@ -636,7 +630,6 @@ function calculate() {
                   foldingTotal + diecutTotal + uvLacquerTotal + embossingTotal + assemblyTotal;
     const roundedTotal = Math.round(total / 10) * 10;
     const row = document.createElement("tr");
-
     if (N_opt === 0 && N > 0) {
       row.innerHTML = `<td colspan="14">Не помещается</td>`;
     } else {
@@ -666,10 +659,9 @@ function calculate() {
     resultsTable.appendChild(row);
   });
 }
-
 function rememberResult(format, productSize, color, paperType, density, quantity, cost,
-                        cuttingEnabled, laminationEnabled, laminationSides,
-                        scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled) {
+                      cuttingEnabled, laminationEnabled, laminationSides,
+                      scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled) {
   const key = JSON.stringify({ format, productSize, color, paperType, density, quantity, cost });
   if (savedResults.some(r => JSON.stringify(r) === key)) {
     alert("❗ Такой вариант уже запомнен.");
@@ -684,7 +676,6 @@ function rememberResult(format, productSize, color, paperType, density, quantity
   });
   renderSavedList();
 }
-
 function renderSavedList() {
   const listCost = document.getElementById("savedCalculations_cost");
   const listPrice = document.getElementById("savedCalculations_price");
@@ -719,14 +710,12 @@ function renderSavedList() {
     if (res.assemblyEnabled) postpress.push("Сборка");
     const postpressText = postpress.length ? ", " + postpress.join(", ") : "";
     const title = res.productType ? `${res.productType}, ` : "";
-
     // Себестоимость
     const divCost = document.createElement("div");
     divCost.className = "saved-item";
     divCost.innerHTML = `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${cost} руб.</b><hr>`;
     listCost.appendChild(divCost);
-
-    // Цена продажи (+ кнопка)
+    // Цена продажи
     const divPrice = document.createElement("div");
     divPrice.className = "saved-item";
     divPrice.innerHTML = `
@@ -735,7 +724,6 @@ function renderSavedList() {
       <button onclick='increasePrice(${index})' style="margin-left: 10px; padding: 4px 8px; font-size: 12px;">+500</button>
       <hr>`;
     listPrice.appendChild(divPrice);
-
     // Прибыль
     const divProfit = document.createElement("div");
     divProfit.className = "saved-item";
@@ -743,18 +731,16 @@ function renderSavedList() {
     listProfit.appendChild(divProfit);
   });
 }
-
 function increasePrice(index) {
   if (savedResults[index]) {
     const currentCost = savedResults[index].cost;
     const currentPrice = savedResults[index].priceOverride !== null ?
                          savedResults[index].priceOverride :
-                         currentCost * ((100 + Number(document.getElementById("markupPercent").value || 20)) / 100);
+                         currentCost * ((100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
     savedResults[index].priceOverride = currentPrice + 500;
     renderSavedList();
   }
 }
-
 function getPaperTypeLabel(type) {
   return type === "offset" ? "Офсетная" :
          type === "matt" ? "Мелованная" :
@@ -787,21 +773,18 @@ function copyToClipboard() {
     const title = res.productType ? `${res.productType}, ` : "";
     text += `${title}${res.productSize}, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → ${formattedPrice} руб.\n`;
   });
-
   navigator.clipboard.writeText(text).then(() => {
     alert("Цены скопированы в буфер обмена!");
   }).catch(() => {
     alert("Ошибка копирования");
   });
 }
-
 function togglePrintSettings() {
   const panel = document.getElementById("printSettingsPanel");
   panel.style.display = panel.style.display === "none" ? "block" : "none";
   document.getElementById("btnPrint").textContent =
     panel.style.display === "none" ? "⚙️ Печать ▼" : "⚙️ Печать ▲";
 }
-
 function updateQuantityButtons() {
   const N = Number(document.getElementById("quantity").value);
   document.querySelectorAll("#quantityButtons button").forEach(btn => {
@@ -825,13 +808,11 @@ function updateQuantityButtons() {
     });
   }
 }
-
 function selectProductType(btn) {
   document.querySelectorAll("#productTypeButtons button").forEach(b => b.classList.remove("selected"));
   btn.classList.add("selected");
   selectedProductType = btn.getAttribute("data-type");
 }
-
 window.onload = () => {
   updatePaperOptions();
   updateFormatButtons();
