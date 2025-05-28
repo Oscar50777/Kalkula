@@ -206,6 +206,8 @@
   <button type="button" onclick="selectProductType(this)" data-type="Блокнот Обложка">Блокнот Обложка</button>
 <button type="button" onclick="selectProductType(this)" data-type="Пакет А4">Пакет А4</button>
 <button type="button" onclick="selectProductType(this)" data-type="Пакет А3">Пакет А3</button>
+  <!-- Кнопка Прайс-лист -->
+<button onclick="generatePriceListByDensityAndPrintRun()" style="margin-top: 20px;">📄 Прайс-лист по плотностям и тиражам</button>
 </div>
 
 <!-- Сообщение -->
@@ -918,6 +920,95 @@ function selectProductType(btn) {
   
   
 }
+function generatePriceListByDensityAndPrintRun() {
+  const container = document.getElementById("priceListContainer");
+  container.innerHTML = ""; // Очистка предыдущих данных
+
+  const productType = selectedProductType || "Листовки";
+  const width = Number(document.getElementById("width").value);
+  const height = Number(document.getElementById("height").value);
+  const sides = s;
+  const paperType = document.getElementById("paperType").value;
+
+  if (!width || !height) {
+    alert("Заполните размер изделия.");
+    return;
+  }
+
+  const sheet = sheetFormats.find(s => s.name === "Z"); // SRA3 (цифра)
+
+  const W = width + 4;
+  const H = height + 4;
+  const printW = sheet.printArea.w;
+  const printH = sheet.printArea.h;
+
+  const v1 = Math.floor(printW / W) * Math.floor(printH / H);
+  const v2 = Math.floor(printW / H) * Math.floor(printH / W);
+  const N_opt = Math.max(v1, v2);
+
+  if (N_opt === 0) {
+    alert("Не помещается ни одно изделие на лист.");
+    return;
+  }
+
+  const extraSheets = 3; // цифровая печать
+  const areaSheet = (sheet.paperSize.w / 1000) * (sheet.paperSize.h / 1000);
+
+  const printCostPerSheet = Number(document.getElementById("printCostZ").value) || 15;
+  const setupPrintValue = Number(document.getElementById("setupPrintZ").value) || 300;
+
+  const quantities = Array.from(document.querySelectorAll("#quantityButtons button"))
+    .map(btn => Number(btn.dataset.qty || btn.textContent.replace(/\D+/g, "")))
+    .filter(q => q > 0);
+
+  if (!quantities.length) {
+    alert("Нет доступных тиражей для отображения.");
+    return;
+  }
+
+  const densities = densityMap[paperType] || [];
+
+  const markupPercent = Number(document.getElementById("markupPercent").value || 20);
+  const markupFactor = (100 + markupPercent) / 100;
+
+  const table = document.createElement("table");
+  table.className = "result-table";
+  table.style.marginBottom = "30px";
+  table.innerHTML = `
+    <thead>
+      <tr><th colspan="${quantities.length + 1}">Формат: Цифра SRA3 | Изделий на листе: ${N_opt}</th></tr>
+      <tr>
+        <th>Плотность г/м²</th>
+        ${quantities.map(q => `<th>${q} шт.</th>`).join("")}
+      </tr>
+    </thead>
+    <tbody>
+      ${densities.map(density => {
+        return `
+          <tr>
+            <td>${density}</td>
+            ${quantities.map(q => {
+              const baseSheets = Math.ceil(q / N_opt);
+              const totalSheets = baseSheets + extraSheets;
+              const paperPricePerKg = getPaperPriceByTypeAndDensity(paperType, density);
+              const weightSheet = areaSheet * (density / 1000);
+              const paperTotal = weightSheet * paperPricePerKg * totalSheets;
+              const printTotal = printCostPerSheet * totalSheets * sides + setupPrintValue;
+              const total = paperTotal + printTotal;
+              const priceWithMarkup = total * markupFactor;
+              return `<td>${Math.round(priceWithMarkup)} р.</td>`;
+            }).join("")}
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  container.appendChild(table);
+
+  window.scrollTo({ top: container.offsetTop, behavior: "smooth" });
+}
+
+  
 window.onload = () => {
   updatePaperOptions();
   updateFormatButtons();
@@ -945,5 +1036,6 @@ window.onload = () => {
   onInputChange();
 };
 </script>
+  <div id="priceListContainer" style="margin-top: 30px;"></div>
 </body>
 </html>
