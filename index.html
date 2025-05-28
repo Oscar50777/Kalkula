@@ -760,7 +760,7 @@ function increasePrice(index) {
     const currentCost = savedResults[index].cost;
     const currentPrice = savedResults[index].priceOverride !== null ?
                          savedResults[index].priceOverride :
-                         currentCost * ((100 + Number(document.getElementById("markupPercent").value || 20)) / 100);
+                         currentCost * ((100 + Number(document.getElementById("markupPercent").value || 20) / 100;
     savedResults[index].priceOverride = currentPrice + 500;
     renderSavedList();
   }
