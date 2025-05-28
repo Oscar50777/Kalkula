@@ -132,23 +132,21 @@
     #productTypeButtons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
   justify-content: center;
+  align-items: center;
+  gap: 8px;
   margin-top: 15px;
-  max-width: 100%;
-  padding: 0 10px;
-  box-sizing: border-box;
 }
 
-    #productTypeButtons button {
-      white-space: nowrap;
-      padding: 6px 10px;
-      font-size: 12px;
-      border: 1px solid #ccc;
-      background-color: #f9f9f9;
-      cursor: pointer;
-      min-width: max-content;
-    }
+#productTypeButtons button {
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
 
     #productTypeButtons button.selected {
       background-color: #007BFF;
