@@ -857,6 +857,61 @@ function selectProductType(btn) {
       { name: "M", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } }
     );
   }
+
+   if (selectedProductType === "Пакет А3") {
+    // Установка размера
+    setFormat('420×594');
+
+    // Тип бумаги
+    document.getElementById("paperType").value = "matt";
+    updatePaperOptions();
+
+    // Выбор плотности 200 г/м²
+    const optionsDiv = document.getElementById("paperOptions");
+    if (optionsDiv) {
+      Array.from(optionsDiv.children).find(btn => btn.textContent === '200 г/м²')?.click();
+    }
+
+    // Цветность: 4+0
+    setSides(1);
+
+    // Ламинация: включена, 1+0
+    document.getElementById("laminationEnabled").checked = true;
+    document.querySelector('input[name="laminationSides"][value="1+0"]').checked = true;
+
+    // Вырубка: включена, штамп = 0
+    document.getElementById("diecutEnabled").checked = true;
+    document.getElementById("diecutStampCostSetting").value = "0";
+
+    // Сборка: включена, 25 руб.
+    document.getElementById("assemblyEnabled").checked = true;
+    document.getElementById("assemblyCostSetting").value = "25";
+
+    // Обновление интерфейса и показ нужных опций
+    updateSubFields();
+    onInputChange();
+
+    // Ограничение форматов только E и M
+    sheetFormats.length = 0;
+    sheetFormats.push(
+      { name: "E", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } },
+      { name: "M", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } }
+    );
+    calculate(); // Пересчёт с новыми форматами
+  } else {
+    // Восстановление всех форматов при выборе другого типа продукции
+    sheetFormats.length = 0;
+    sheetFormats.push(
+      { name: "Z", paperSize: { w: 320, h: 450 }, printArea: { w: 310, h: 430 } },
+      { name: "E", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } },
+      { name: "B", paperSize: { w: 470, h: 620 }, printArea: { w: 450, h: 610 } },
+      { name: "R", paperSize: { w: 470, h: 650 }, printArea: { w: 450, h: 640 } },
+      { name: "A", paperSize: { w: 500, h: 700 }, printArea: { w: 480, h: 690 } },
+      { name: "M", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } }
+    );
+  }
+  
+  
 }
 window.onload = () => {
   updatePaperOptions();
