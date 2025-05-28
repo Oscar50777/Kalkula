@@ -129,9 +129,10 @@
     }
     #productTypeButtons {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(max-content, 1fr));
       gap: 8px;
       margin-top: 15px;
+      white-space: nowrap;
     }
     #productTypeButtons button {
       padding: 6px 10px;
@@ -140,8 +141,7 @@
       background-color: #f9f9f9;
       cursor: pointer;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      min-width: max-content;
     }
     #productTypeButtons button.selected {
       background-color: #007BFF;
@@ -184,16 +184,42 @@
 <body>
 <h2>Калькулятор себестоимости по форматам бумаги</h2>
 
-<!-- Кнопка ТПакеты -->
-<button onclick="presetTPackets()" style="margin-bottom: 15px; padding: 10px; font-size: 14px;">📦 ТПакеты</button>
+<!-- Блок с продукцией -->
+<div id="productTypeButtons">
+  <button type="button" onclick="selectProductType(this)" data-type="Визитки">Визитки</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Буклеты">Буклеты</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Листовки">Листовки</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Флаеры">Флаеры</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Календари">Календари</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Плакаты">Плакаты</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Папки">Папки</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Пакеты">Пакеты</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Открытки">Открытки</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Блокноты">Блокноты</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Наклейки бумажные">Наклейки бумажные</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Бланки">Бланки</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Карточки">Карточки</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Бирки">Бирки</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Хенгеры">Хенгеры</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Дипломы">Дипломы</button>
+  <!-- Новые кнопки -->
+  <button type="button" onclick="selectProductType(this)" data-type="Блок блокнота А4">Блок блокнота А4</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Блок блокнота А5">Блок блокнота А5</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Блок блокнота А6">Блок блокнота А6</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Обложка блокнота">Обложка блокнота</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Пакет А4">Пакет А4</button>
+  <button type="button" onclick="selectProductType(this)" data-type="Пакет А3">Пакет А3</button>
+</div>
 
 <!-- Сообщение -->
 <div id="statusMessage"></div>
+
 <!-- Запрос клиента -->
 <div style="margin-bottom: 15px;">
   <label>Запрос клиента:</label>
   <textarea id="clientRequestInput" rows="4" style="width: 100%;"></textarea>
 </div>
+
 <!-- Настройка печати -->
 <div style="margin-bottom: 15px;">
   <button onclick="togglePrintSettings()" id="btnPrint">⚙️ Настройка печати ▼</button>
@@ -206,6 +232,7 @@
     <label>Приладка А2</label><input type="number" id="setupPrintOffsetA2" value="10000">
   </div>
 </div>
+
 <!-- Послепечатные работы -->
 <div style="margin-bottom: 15px;">
   <button onclick="togglePostpress()" id="btnPostpress">⚙️ Послепечатные работы ▼</button>
@@ -284,6 +311,7 @@
     </div>
   </div>
 </div>
+
 <!-- Основная форма -->
 <div class="main-container">
   <!-- Левая часть -->
@@ -355,32 +383,9 @@
         <tr><td colspan="14">Нажмите «Рассчитать» для вывода результата</td></tr>
       </tbody>
     </table>
-    <div id="productTypeButtons">
-  <button type="button" onclick="selectProductType(this)" data-type="Визитки">Визитки</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Буклеты">Буклеты</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Листовки">Листовки</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Флаеры">Флаеры</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Календари">Календари</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Плакаты">Плакаты</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Папки">Папки</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Пакеты А4">Пакеты А4</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Пакеты А3">Пакеты А3</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Блокноты Обложки">Блокноты Обложки</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Блокноты блок А6">Блокноты блок А6</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Блокноты блок А5">Блокноты блок А5</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Блокноты блок А4">Блокноты блок А4</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Брошюра блок">Брошюра блок</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Брошюра обложка">Брошюра обложка</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Открытки">Открытки</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Наклейки бумажные">Наклейки бумажные</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Бланки">Бланки</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Карточки">Карточки</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Бирки">Бирки</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Хенгеры">Хенгеры</button>
-  <button type="button" onclick="selectProductType(this)" data-type="Дипломы">Дипломы</button>
-</div>
   </div>
 </div>
+
 <!-- Сохранённые результаты -->
 <div class="saved-list">
   <h3>Себестоимость</h3>
@@ -397,6 +402,7 @@
   <p id="savedMessage_profit">Пока нет данных</p>
   <div id="savedCalculations_profit"></div>
 </div>
+
 <!-- Наценка -->
 <div style="margin-top: 15px;">
   <label>Наценка (%):</label>
@@ -404,6 +410,7 @@
 </div>
 <button onclick="copyToClipboard()" style="margin-top: 10px;">💾 Копировать в буфер</button>
 <input type="hidden" id="densityInput" value="300">
+
 <!-- Константы -->
 <div style="margin-top: 30px; border-top: 2px solid #ccc; padding-top: 20px;">
   <h3>🔧 Константы для расчётов</h3>
@@ -437,6 +444,7 @@
     </ul>
   </div>
 </div>
+
 <script>
 let s = 1;
 const formatLabels = {
@@ -629,6 +637,7 @@ function calculate() {
                   foldingTotal + diecutTotal + uvLacquerTotal + embossingTotal + assemblyTotal;
     const roundedTotal = Math.round(total / 10) * 10;
     const row = document.createElement("tr");
+
     if (N_opt === 0 && N > 0) {
       row.innerHTML = `<td colspan="14">Не помещается</td>`;
     } else {
@@ -672,7 +681,7 @@ function rememberResult(format, productSize, color, paperType, density, quantity
     productType: selectedProductType,
     cuttingEnabled, laminationEnabled, laminationSides,
     scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled,
-    priceOverride: null // <-- новое поле
+    priceOverride: null
   });
   renderSavedList();
 }
@@ -693,6 +702,7 @@ function renderSavedList() {
   document.getElementById("savedMessage_cost").style.display = "none";
   document.getElementById("savedMessage_price").style.display = "none";
   document.getElementById("savedMessage_profit").style.display = "none";
+
   const markupFactor = (100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
   savedResults.forEach((res, index) => {
     const cost = res.cost;
@@ -710,11 +720,13 @@ function renderSavedList() {
     if (res.assemblyEnabled) postpress.push("Сборка");
     const postpressText = postpress.length ? ", " + postpress.join(", ") : "";
     const title = res.productType ? `${res.productType}, ` : "";
+
     // Себестоимость
     const divCost = document.createElement("div");
     divCost.className = "saved-item";
     divCost.innerHTML = `<strong>${title}${res.productSize}</strong>, ${res.color}, ${getPaperTypeLabel(res.paperType)} ${res.density} г/м²${postpressText} — ${res.quantity} шт → <b>${cost} руб.</b><hr>`;
     listCost.appendChild(divCost);
+
     // Цена продажи (+ кнопка)
     const divPrice = document.createElement("div");
     divPrice.className = "saved-item";
@@ -724,6 +736,7 @@ function renderSavedList() {
       <button onclick='increasePrice(${index})' style="margin-left: 10px; padding: 4px 8px; font-size: 12px;">+500</button>
       <hr>`;
     listPrice.appendChild(divPrice);
+
     // Прибыль
     const divProfit = document.createElement("div");
     divProfit.className = "saved-item";
@@ -818,55 +831,6 @@ function selectProductType(btn) {
   document.querySelectorAll("#productTypeButtons button").forEach(b => b.classList.remove("selected"));
   btn.classList.add("selected");
   selectedProductType = btn.getAttribute("data-type");
-}
-
-function presetTPackets() {
-  // Установить размер 99×210 мм
-  document.getElementById("width").value = "99";
-  document.getElementById("height").value = "210";
-  updateFormatButtons();
-
-  // Выбрать мелованную бумагу
-  const paperTypeSelect = document.getElementById("paperType");
-  paperTypeSelect.value = "matt";
-  updatePaperOptions(); // обновляем опции плотности
-
-  // Установить плотность 200 г/м²
-  setTimeout(() => {
-    const buttons = document.querySelectorAll("#paperOptions button");
-    for (let btn of buttons) {
-      if (btn.textContent.includes("200")) {
-        btn.click();
-        break;
-      }
-    }
-  }, 100); // задержка нужна, чтобы опции успели подгрузиться
-
-  // Включить вырубку
-  const diecutCheckbox = document.getElementById("diecutEnabled");
-  if (!diecutCheckbox.checked) {
-    diecutCheckbox.checked = true;
-    document.getElementById("diecutOptions").style.display = "block";
-  }
-
-  // Включить одностороннюю ламинацию
-  const laminationCheckbox = document.getElementById("laminationEnabled");
-  if (!laminationCheckbox.checked) {
-    laminationCheckbox.checked = true;
-    document.getElementById("laminationOptions").style.display = "block";
-  }
-  document.querySelector('input[name="laminationSides"][value="1+0"]').checked = true;
-
-  // Установить сборку
-  const assemblyCheckbox = document.getElementById("assemblyEnabled");
-  if (!assemblyCheckbox.checked) {
-    assemblyCheckbox.checked = true;
-    document.getElementById("assemblyOptions").style.display = "block";
-  }
-  document.getElementById("assemblyCostSetting").value = 50;
-
-  // Применить изменения
-  onInputChange();
 }
 
 window.onload = () => {
