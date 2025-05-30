@@ -312,6 +312,22 @@
 </div>
 
 <!-- Основная форма -->
+  <!-- Блок брошюры -->
+<div id="brochureSection" style="margin-top: 20px;">
+  <button onclick="toggleBrochureOptions()" id="btnBrochure">📘 Брошюра ▼</button>
+  <div id="brochureOptions" class="settings-panel" style="display:none;">
+    <div id="brochureFormatButtons" class="format-buttons">
+      <button onclick="selectBrochureFormat(this, 'A6')">А6</button>
+      <button onclick="selectBrochureFormat(this, 'A5')">А5</button>
+      <button onclick="selectBrochureFormat(this, 'A4')">А4</button>
+      <button onclick="selectBrochureFormat(this, '210x210')">210×210</button>
+    </div>
+    <label>Число:</label>
+    <input type="text" id="brochureInput" maxlength="5" oninput="calculateBrochureResult()" style="width:100%;">
+    <label>Результат:</label>
+    <input type="text" id="brochureOutput" readonly style="width:100%; background:#f9f9f9;">
+  </div>
+</div>
 <div class="main-container">
   <!-- Левая часть -->
   <div class="left">
@@ -1041,6 +1057,44 @@ window.onload = () => {
   document.getElementById("setupAssembly").oninput = onInputChange;
   onInputChange();
 };
+  let selectedBrochureFormat = null;
+
+function toggleBrochureOptions() {
+  const panel = document.getElementById("brochureOptions");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+  document.getElementById("btnBrochure").textContent =
+    panel.style.display === "none" ? "📘 Брошюра ▼" : "📘 Брошюра ▲";
+}
+
+function selectBrochureFormat(button, format) {
+  document.querySelectorAll("#brochureFormatButtons button").forEach(btn => btn.classList.remove("selected"));
+  button.classList.add("selected");
+  selectedBrochureFormat = format;
+  calculateBrochureResult();
+}
+
+function calculateBrochureResult() {
+  if (!selectedBrochureFormat) return;
+
+  const inputField = document.getElementById("brochureInput");
+  let value = parseInt(inputField.value.replace(/\D+/g, ""), 10);
+
+  if (isNaN(value)) {
+    document.getElementById("brochureOutput").value = "";
+    return;
+  }
+
+  let divisor = 1;
+  switch (selectedBrochureFormat) {
+    case "A6": divisor = 32; break;
+    case "A5": divisor = 16; break;
+    case "A4": divisor = 8; break;
+    case "210x210": divisor = 12; break;
+  }
+
+  const result = Math.ceil(value / divisor);
+  document.getElementById("brochureOutput").value = result;
+}
 </script>
   <div id="priceListWithPriceContainer" style="margin-top: 30px;"></div>
 </body>
