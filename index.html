@@ -1,5 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+    function downloadPriceListExcel() {
+  const wb = XLSX.utils.book_new();
+
+  const container = document.getElementById("priceTableContainer");
+  const tables = container.querySelectorAll("table");
+
+  tables.forEach((table, i) => {
+    const ws = XLSX.utils.table_to_sheet(table);
+    XLSX.utils.book_append_sheet(wb, ws, `Лист ${i + 1}`);
+  });
+
+  XLSX.writeFile(wb, "прайс_лист.xlsx");
+}
+  </script> 
+  
 <head>
   <meta charset="UTF-8">
   <title>Калькулятор себестоимости</title>
@@ -214,6 +230,20 @@
   <!-- Кнопка Прайс-лист по форматам -->
   <button onclick="generatePriceListByFormatsWithSellingPrice()" style="margin-top: 20px;"> Прайс </button>
   <button onclick="generatePriceTable()" style="margin-top: 20px;">📊 Показать прайс-таблицу</button>
+
+<!-- Кнопка -->
+<button onclick="openPriceTableModal()" style="margin-top: 20px;">📊 Показать прайс-таблицу</button>
+
+<!-- Модальное окно -->
+<div id="priceTableModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;">
+  <div style="background:#fff; margin:5% auto; padding:20px; max-width:90%; max-height:80vh; overflow:auto; border-radius:8px;">
+    <h3>📊 Прайс-лист</h3>
+    <button onclick="downloadPriceListExcel()" style="margin-bottom:10px;">📥 Скачать Excel</button>
+    <button onclick="closePriceTableModal()" style="float:right;">❌ Закрыть</button>
+    <div id="priceTableContainer" style="overflow-x:auto;"></div>
+  </div>
+</div>
+  
 </div>
 
 <!-- Сообщение -->
@@ -1351,6 +1381,123 @@ function calculateBrochureResult() {
   });
 
   window.scrollTo({ top: container.offsetTop, behavior: "smooth" });
+}
+  function openPriceTableModal() {
+  const container = document.getElementById("priceTableContainer");
+  container.innerHTML = ""; // Очистка предыдущих данных
+
+  const markupPercent = Number(document.getElementById("markupPercent").value) || 20;
+  const markupFactor = (100 + markupPercent) / 100;
+
+  const quantities = [50, 100, 200, 300, 500, 1000, 1500, 2000, 3000, 4000, 5000, 8000, 10000];
+
+  const products = [
+    { name: "Листовка А6", width: 105, height: 148 },
+    { name: "Листовка А5", width: 148, height: 210 },
+    { name: "Листовка А4", width: 210, height: 297 },
+    { name: "Листовка А3", width: 297, height: 420 },
+    { name: "Плакат А2", width: 420, height: 594 }
+  ];
+
+  const sidesOptions = [
+    { s: 1, label: "4+0" },
+    { s: 2, label: "4+4" }
+  ];
+
+  const paperTypes = [
+    { type: "offset", label: "Офсетная", densities: densityMap.offset },
+    { type: "matt", label: "Мелованная", densities: densityMap.matt },
+    { type: "cardboard", label: "Картон", densities: densityMap.cardboard }
+  ];
+
+  products.forEach(product => {
+    const { name: productName, width, height } = product;
+
+    sidesOptions.forEach(sideOpt => {
+      const { s: sideVal, label: sideLabel } = sideOpt;
+
+      paperTypes.forEach(paper => {
+        const { label: paperLabel, densities } = paper;
+
+        densities.forEach(density => {
+          const table = document.createElement("table");
+          table.className = "result-table";
+          table.style.marginBottom = "20px";
+
+          let headerRow = `
+            <thead>
+              <tr><th colspan="${quantities.length + 4}">Формат: ${productName}, Цветность: ${sideLabel}, Тип бумаги: ${paperLabel}, Плотность: ${density} г/м²</th></tr>
+              <tr>
+                <th>Формат печати</th>
+                <th>Изделий на листе</th>
+                <th>Тираж</th>
+                <th>Цена с наценкой (${markupPercent}%)</th>
+              </tr>
+            </thead>
+            <tbody>
+          `;
+
+          sheetFormats.forEach(sheet => {
+            const W = width + 4;
+            const H = height + 4;
+            const printW = sheet.printArea.w;
+            const printH = sheet.printArea.h;
+
+            const v1 = Math.floor(printW / W) * Math.floor(printH / H);
+            const v2 = Math.floor(printW / H) * Math.floor(printH / W);
+            const N_opt = Math.max(v1, v2);
+
+            if (N_opt === 0) return;
+
+            const extraSheets = ["Z", "E"].includes(sheet.name) ? 3 : 250;
+
+            const areaSheet = (sheet.paperSize.w / 1000) * (sheet.paperSize.h / 1000);
+            const weightSheet = areaSheet * (density / 1000);
+            const paperPricePerKg = getPaperPriceByTypeAndDensity(paper.type, density);
+            const printCostPerSheet = sheet.name === "Z"
+              ? Number(document.getElementById("printCostZ").value)
+              : sheet.name === "E"
+                ? Number(document.getElementById("printCostE").value)
+                : Number(document.getElementById("printCostOffsetA2").value);
+            const setupPrintValue = sheet.name === "Z"
+              ? Number(document.getElementById("setupPrintZ").value)
+              : sheet.name === "E"
+                ? Number(document.getElementById("setupPrintE").value)
+                : Number(document.getElementById("setupPrintOffsetA2").value);
+
+            quantities.forEach(quantity => {
+              const baseSheets = Math.ceil(quantity / N_opt);
+              const totalSheets = baseSheets + extraSheets;
+
+              const paperTotal = weightSheet * paperPricePerKg * totalSheets;
+              const printTotal = printCostPerSheet * totalSheets * sideVal + setupPrintValue;
+              const total = paperTotal + printTotal;
+              const priceWithMarkup = total * markupFactor;
+
+              headerRow += `
+                <tr>
+                  <td>${formatLabels[sheet.name]}</td>
+                  <td>${N_opt}</td>
+                  <td>${quantity}</td>
+                  <td>${Math.round(priceWithMarkup)} р.</td>
+                </tr>
+              `;
+            });
+          });
+
+          headerRow += "</tbody>";
+          table.innerHTML = headerRow;
+          container.appendChild(table);
+        });
+      });
+    });
+  });
+
+  document.getElementById("priceTableModal").style.display = "block";
+}
+
+function closePriceTableModal() {
+  document.getElementById("priceTableModal").style.display = "none";
 }
 </script>
   <div id="priceListWithPriceContainer" style="margin-top: 30px;"></div>
