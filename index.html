@@ -2,63 +2,117 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Четыре независимых калькулятора</title>
+  <title>Калькулятор себестоимости — 4 фрейма</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
     }
+
     h2 {
+      text-align: center;
+    }
+
+    .summary-buttons {
       text-align: center;
       margin-bottom: 20px;
     }
+
+    .summary-buttons button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .summary-result {
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    .summary-description {
+      font-size: 14px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 40px;
+      margin-top: 20px;
     }
-    th, td {
+
+    td {
       border: 1px solid #ccc;
       padding: 10px;
       text-align: center;
     }
+
     iframe {
       width: 100%;
       height: 900px;
       border: none;
-      background-color: #f9f9f9;
+      background-color: #fff;
     }
   </style>
 </head>
 <body>
 
-<h2>Калькулятор себестоимости — четыре экземпляра</h2>
+<h2>Калькулятор себестоимости — 4 экземпляра</h2>
 
+<!-- Блок кнопок и вывода -->
+<div class="summary-buttons">
+  <button onclick="sumPrices([0, 1])">Сумма 1+2</button>
+  <button onclick="sumPrices([0, 1, 2])">Сумма 1+2+3</button>
+  <button onclick="sumPrices([0, 1, 2, 3])">Сумма 1+2+3+4</button>
+  <div class="summary-result">Итого: <span id="totalSum">0</span> руб.</div>
+  <div class="summary-description" id="summaryDescription"></div>
+</div>
+
+<!-- Таблица с iframe -->
 <table>
-  <!-- Строка 1 -->
-  <tr class="header-row">
-    <th>Фрейм калькулятора 1</th>
-    <th>Фрейм калькулятора 2</th>
-  </tr>
-
-  <!-- Строка 2 -->
   <tr>
-    <td><iframe src="calculator.html" title="Калькулятор 1"></iframe></td>
-    <td><iframe src="calculator.html" title="Калькулятор 2"></iframe></td>
+    <td><iframe src="calculator.html" title="Фрейм 1"></iframe></td>
+    <td><iframe src="calculator.html" title="Фрейм 2"></iframe></td>
   </tr>
-
-  <!-- Строка 3 -->
-  <tr class="header-row">
-    <th>Фрейм калькулятора 3</th>
-    <th>Фрейм калькулятора 4</th>
-  </tr>
-
-  <!-- Строка 4 -->
   <tr>
-    <td><iframe src="calculator.html" title="Калькулятор 3"></iframe></td>
-    <td><iframe src="calculator.html" title="Калькулятор 4"></iframe></td>
+    <td><iframe src="calculator.html" title="Фрейм 3"></iframe></td>
+    <td><iframe src="calculator.html" title="Фрейм 4"></iframe></td>
   </tr>
 </table>
+
+<script>
+  const frames = window.frames; // Все iframe на странице
+  const priceData = [null, null, null, null]; // Хранилище цен по индексам
+  const productInfo = ['', '', '', '']; // Хранение описания
+
+  // Слушатель сообщений от iframe
+  window.addEventListener("message", function(event) {
+    if (event.data && event.data.type === "lastPrice") {
+      const iframeIndex = Array.from(frames).indexOf(event.source);
+      if (iframeIndex >= 0) {
+        priceData[iframeIndex] = event.data.price;
+        productInfo[iframeIndex] = event.data.description || '';
+      }
+    }
+  });
+
+  // Функция для подсчёта суммы выбранных iframe
+  function sumPrices(indices) {
+    let total = 0;
+    let description = '';
+    indices.forEach((i, idx) => {
+      if (priceData[i] !== null) {
+        total += priceData[i];
+        description += `Фрейм ${i + 1}: ${productInfo[i]}\n`;
+      }
+    });
+    document.getElementById("totalSum").textContent = total.toFixed(2);
+    description += `\nИтого: ${total.toFixed(2)} руб.`;
+    document.getElementById("summaryDescription").textContent = description;
+  }
+</script>
 
 </body>
 </html>
