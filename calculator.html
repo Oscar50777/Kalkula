@@ -656,6 +656,32 @@ function calculate() {
   const N = Number(document.getElementById("quantity").value);
   const density = Number(document.getElementById("densityInput").value);
   const paperType = document.getElementById("paperType").value;
+  // === Строка с описанием выбора пользователя ===
+const summaryDiv = document.getElementById("calculationSummary");
+const formatStr = `${w}×${h} мм`;
+const paperTypeLabel = getPaperTypeLabel(paperType);
+
+let postpressList = [];
+
+if (document.getElementById("cuttingEnabled").checked) postpressList.push("Резка");
+if (document.getElementById("laminationEnabled").checked) {
+  const laminationSides = document.querySelector('input[name="laminationSides"]:checked').value;
+  postpressList.push("Ламинация " + laminationSides);
+}
+if (document.getElementById("scoreEnabled").checked) postpressList.push("Биговка");
+if (document.getElementById("foldingEnabled").checked) postpressList.push("Фальцовка");
+if (document.getElementById("diecutEnabled").checked) postpressList.push("Вырубка");
+if (document.getElementById("uvLacquerEnabled").checked) postpressList.push("УФ-лак");
+if (document.getElementById("embossingEnabled").checked) postpressList.push("Тиснение");
+if (document.getElementById("assemblyEnabled").checked) postpressList.push("Сборка");
+
+const postpressStr = postpressList.length ? `, ${postpressList.join(", ")}` : "";
+
+summaryDiv.innerHTML = `
+  Формат: <b>${formatStr}</b>, Тираж: <b>${N}</b> шт., 
+  Бумага: <b>${paperTypeLabel} ${density} г/м²</b>, Цветность: <b>${s === 1 ? '4+0' : '4+4'}</b>${postpressStr}
+`;
+// === Конец строки с описанием ===
   const isCustomPaper = paperType === "designer" || paperType === "adhesive";
   const customPaperPrice = isCustomPaper ? Number(document.getElementById("customPaperPrice").value || 100) : 0;
   const paperPricePerKg = isCustomPaper ? 0 : Number(document.getElementById("paperPricePerKg").value);
