@@ -184,15 +184,6 @@
         grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
       }
     }
-.sticky-section {
-  position: sticky;
-  top: 0;
-  background-color: white;
-  z-index: 100;
-  padding-top: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-    
   </style>
 </head>
 <body>
@@ -226,12 +217,10 @@
 <!-- Сообщение -->
 <div id="statusMessage"></div>
 
-<div class="sticky-section">
-  <!-- Запрос клиента -->
-  <div style="margin-bottom: 15px;">
-    <label>Запрос клиента:</label>
-    <textarea id="clientRequestInput" rows="4" style="width: 100%;"></textarea>
-  </div>
+<!-- Запрос клиента -->
+<div style="margin-bottom: 15px;">
+  <label>Запрос клиента:</label>
+  <textarea id="clientRequestInput" rows="4" style="width: 100%;"></textarea>
 </div>
 
 <!-- Настройка печати -->
@@ -1265,33 +1254,6 @@ function calculateBrochureResult() {
 
   // Периодически отправляем данные родительскому окну
   setInterval(sendLastPriceToParent, 1000);
-
-  window.addEventListener('scroll', function () {
-    const section = document.querySelector('.sticky-section');
-    if (!section) return;
-
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const offsetTop = section.offsetTop;
-
-    if (scrollTop >= offsetTop) {
-      section.style.position = 'fixed';
-      section.style.top = '0';
-      section.style.width = '100%';
-      section.style.backgroundColor = 'white';
-      section.style.zIndex = '1000';
-      section.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-    } else {
-      section.style.position = '';
-      section.style.top = '';
-      section.style.width = '';
-      section.style.backgroundColor = '';
-      section.style.zIndex = '';
-      section.style.boxShadow = '';
-    }
-  });
-
-
-    
 </script>
 </body>
 </html>
