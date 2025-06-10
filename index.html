@@ -31,9 +31,22 @@
       margin-top: 10px;
     }
 
+    .client-request-block {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .client-request {
+      width: 80%;
+      min-height: 100px;
+      padding: 10px;
+      font-size: 14px;
+      resize: vertical; /* Возможность растягивать по вертикали */
+    }
+
     .summary-description {
       font-size: 14px;
-      margin-top: 10px;
+      margin-top: 20px;
       white-space: pre-wrap;
     }
 
@@ -58,12 +71,6 @@
       background-color: #f9f9f9;
     }
 
-    .client-request {
-      padding: 8px;
-      font-size: 14px;
-      width: 100%;
-    }
-
     iframe {
       width: 100%;
       height: 400px;
@@ -82,42 +89,26 @@
   <button onclick="sumPrices([0, 1, 2])">Сумма 1+2+3</button>
   <button onclick="sumPrices([0, 1, 2, 3])">Сумма 1+2+3+4</button>
   <div class="summary-result">Итого: <span id="totalSum">0</span> руб.</div>
-  <div class="summary-description" id="summaryDescription"></div>
 </div>
 
-<!-- Таблица с iframe и запросами клиентов -->
+<!-- Поле "Запрос клиента" -->
+<div class="client-request-block">
+  <label for="clientRequestInput"><strong>Запрос клиента:</strong></label><br>
+  <textarea id="clientRequestInput" class="client-request" placeholder="Введите запрос клиента..."></textarea>
+</div>
+
+<!-- Блок описания результатов -->
+<div class="summary-description" id="summaryDescription"></div>
+
+<!-- Таблица с iframe -->
 <table>
   <tr>
-    <td>
-      <div class="frame-container">
-        <label>Запрос клиента:</label>
-        <input type="text" class="client-request" oninput="updateRequest(0)">
-        <iframe src="calculator.html" title="Фрейм 1"></iframe>
-      </div>
-    </td>
-    <td>
-      <div class="frame-container">
-        <label>Запрос клиента:</label>
-        <input type="text" class="client-request" oninput="updateRequest(1)">
-        <iframe src="calculator.html" title="Фрейм 2"></iframe>
-      </div>
-    </td>
+    <td><iframe src="calculator.html" title="Фрейм 1"></iframe></td>
+    <td><iframe src="calculator.html" title="Фрейм 2"></iframe></td>
   </tr>
   <tr>
-    <td>
-      <div class="frame-container">
-        <label>Запрос клиента:</label>
-        <input type="text" class="client-request" oninput="updateRequest(2)">
-        <iframe src="calculator.html" title="Фрейм 3"></iframe>
-      </div>
-    </td>
-    <td>
-      <div class="frame-container">
-        <label>Запрос клиента:</label>
-        <input type="text" class="client-request" oninput="updateRequest(3)">
-        <iframe src="calculator.html" title="Фрейм 4"></iframe>
-      </div>
-    </td>
+    <td><iframe src="calculator.html" title="Фрейм 3"></iframe></td>
+    <td><iframe src="calculator.html" title="Фрейм 4"></iframe></td>
   </tr>
 </table>
 
@@ -125,7 +116,6 @@
   const frames = window.frames; // Все iframe на странице
   const priceData = [null, null, null, null]; // Хранилище цен по индексам
   const productInfo = ['', '', '', '']; // Хранение описания
-  const clientRequests = ['', '', '', '']; // Хранение запросов клиентов
 
   // Слушатель сообщений от iframe
   window.addEventListener("message", function(event) {
@@ -138,29 +128,33 @@
     }
   });
 
-  // Сохраняем запрос клиента при вводе
-  function updateRequest(index) {
-    const inputs = document.querySelectorAll('.client-request');
-    if (inputs[index]) {
-      clientRequests[index] = inputs[index].value;
-    }
-  }
-
   // Функция для подсчёта суммы выбранных iframe
   function sumPrices(indices) {
     let total = 0;
     let description = '';
+    const clientRequest = document.getElementById('clientRequestInput').value.trim();
+
     indices.forEach((i) => {
       if (priceData[i] !== null) {
         total += priceData[i];
         description += `Фрейм ${i + 1}:\n`;
-        description += `Запрос: «${clientRequests[i] || '—'}»\n`;
-        description += `Результат: ${productInfo[i]}\n\n`;
+        description += `${productInfo[i]}\n\n`;
       }
     });
+
+    // Вывод итога
     document.getElementById("totalSum").textContent = total.toFixed(2);
-    description += `Итого: ${total.toFixed(2)} руб.`;
-    document.getElementById("summaryDescription").textContent = description;
+
+    // Добавляем запрос клиента к описанию
+    let fullDescription = '';
+    if (clientRequest) {
+      fullDescription += `Запрос клиента:\n${clientRequest}\n\n`;
+    }
+
+    fullDescription += description;
+    fullDescription += `Итого: ${total.toFixed(2)} руб.`;
+
+    document.getElementById("summaryDescription").textContent = fullDescription;
   }
 </script>
 
