@@ -1233,6 +1233,9 @@ function calculateBrochureResult() {
   document.getElementById("brochureOutput").value = result;
 }
 
+ </script>
+  <div id="priceListWithPriceContainer" style="margin-top: 30px;"></div>
+  <script>
   // Отправка последней цены и описания родителю
   function sendLastPriceToParent() {
     const priceList = document.querySelectorAll("#savedCalculations_price .saved-item b");
@@ -1251,8 +1254,6 @@ function calculateBrochureResult() {
 
   // Периодически отправляем данные родительскому окну
   setInterval(sendLastPriceToParent, 1000);
-
 </script>
-  <div id="priceListWithPriceContainer" style="margin-top: 30px;"></div>
 </body>
 </html>
