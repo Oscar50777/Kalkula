@@ -1232,6 +1232,26 @@ function calculateBrochureResult() {
   const result = Math.ceil(value / divisor);
   document.getElementById("brochureOutput").value = result;
 }
+
+  // Отправка последней цены и описания родителю
+  function sendLastPriceToParent() {
+    const priceList = document.querySelectorAll("#savedCalculations_price .saved-item b");
+    if (priceList.length > 0) {
+      const lastPriceText = priceList[priceList.length - 1].textContent.replace(/[^\d.]/g, '');
+      const lastPrice = parseFloat(lastPriceText);
+
+      const itemText = document.querySelector("#savedCalculations_price .saved-item");
+      const description = itemText ? itemText.textContent.trim().replace(/^\d+\sруб\.$/, '').trim() : '';
+
+      if (!isNaN(lastPrice)) {
+        window.parent.postMessage({ type: "lastPrice", price: lastPrice, description }, "*");
+      }
+    }
+  }
+
+  // Периодически отправляем данные родительскому окну
+  setInterval(sendLastPriceToParent, 1000);
+
 </script>
   <div id="priceListWithPriceContainer" style="margin-top: 30px;"></div>
 </body>
