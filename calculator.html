@@ -152,6 +152,23 @@
       color: #666;
       margin-top: 5px;
     }
+    .multiplier-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+    .multiplier-control button {
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .multiplier-control input {
+      width: 80px;
+      text-align: center;
+      margin: 0;
+    }
     @media (max-width: 768px) {
       .remember-btn {
         font-size: 11px;
@@ -413,6 +430,25 @@
   </div>
 </div>
 
+<!-- Наценка -->
+<div style="margin-top: 15px;">
+  <label>Наценка (%):</label>
+  <input type="number" id="markupPercent" value="20" oninput="onInputChange()" style="width: 100%;">
+</div>
+
+<!-- Множитель количества -->
+<div style="margin-top: 15px;">
+  <label>Количество (множитель):</label>
+  <div class="multiplier-control">
+    <button type="button" onclick="changeMultiplier(-1)">-</button>
+    <input type="number" id="quantityMultiplier" value="1" min="1" oninput="onMultiplierChange()">
+    <button type="button" onclick="changeMultiplier(1)">+</button>
+  </div>
+</div>
+
+<button onclick="copyToClipboard()" style="margin-top: 10px;">💾 Копировать в буфер</button>
+<input type="hidden" id="densityInput" value="300">
+
 <!-- Сохранённые результаты -->
 <div class="saved-list">
   <h3>Себестоимость</h3>
@@ -429,14 +465,6 @@
   <p id="savedMessage_profit">Пока нет данных</p>
   <div id="savedCalculations_profit"></div>
 </div>
-
-<!-- Наценка -->
-<div style="margin-top: 15px;">
-  <label>Наценка (%):</label>
-  <input type="number" id="markupPercent" value="20" oninput="onInputChange()" style="width: 100%;">
-</div>
-<button onclick="copyToClipboard()" style="margin-top: 10px;">💾 Копировать в буфер</button>
-<input type="hidden" id="densityInput" value="300">
 
 <!-- Константы -->
 <div style="margin-top: 30px; border-top: 2px solid #ccc; padding-top: 20px;">
@@ -648,6 +676,7 @@ function calculate() {
   const isCustomPaper = paperType === "designer" || paperType === "adhesive";
   const customPaperPrice = isCustomPaper ? Number(document.getElementById("customPaperPrice").value || 100) : 0;
   const paperPricePerKg = isCustomPaper ? 0 : Number(document.getElementById("paperPricePerKg").value);
+  const multiplier = Number(document.getElementById("quantityMultiplier").value) || 1;
   
   const c_p_Z = Number(document.getElementById("printCostZ").value);
   const P_Z = Number(document.getElementById("setupPrintZ").value);
@@ -683,6 +712,14 @@ function calculate() {
   const assemblyEnabled = document.getElementById("assemblyEnabled")?.checked ?? false;
   const assemblyCost = Number(document.getElementById("assemblyCostSetting").value) || 0;
   const setupAssembly = Number(document.getElementById("setupAssembly").value) || 0;
+  
+  // Обновляем заголовок таблицы в зависимости от множителя
+  const lastHeader = document.querySelector('#resultsBody th:last-child');
+  if (multiplier > 1) {
+    lastHeader.textContent = `Итого (×${multiplier})`;
+  } else {
+    lastHeader.textContent = 'Итого';
+  }
   
   sheetFormats.forEach(sheet => {
     const W = w + 4;
@@ -732,6 +769,8 @@ function calculate() {
     const total = paperTotal + printTotal + cuttingTotal + laminationTotal + scoreTotal +
                   foldingTotal + diecutTotal + uvLacquerTotal + embossingTotal + assemblyTotal;
     const roundedTotal = Math.round(total / 10) * 10;
+    const finalTotal = roundedTotal * multiplier;
+    
     const row = document.createElement("tr");
     if (N_opt === 0 && N > 0) {
       row.innerHTML = `<td colspan="14">Не помещается</td>`;
@@ -756,7 +795,7 @@ function calculate() {
         <td>${uvLacquerEnabled ? uvLacquerTotal.toFixed(2) : "—"}</td>
         <td>${embossingEnabled ? embossingTotal.toFixed(2) : "—"}</td>
         <td>${assemblyEnabled ? assemblyTotal.toFixed(2) : "—"}</td>
-        <td><b>${roundedTotal.toFixed(2)}</b></td>
+        <td><b data-original="${roundedTotal.toFixed(2)}">${finalTotal.toFixed(2)}</b></td>
       `;
     }
     resultsTable.appendChild(row);
@@ -766,22 +805,40 @@ function calculate() {
 function rememberResult(format, productSize, color, paperType, density, quantity, cost,
                         cuttingEnabled, laminationEnabled, laminationSides,
                         scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled) {
-  const key = JSON.stringify({ format, productSize, color, paperType, density, quantity, cost });
-  if (savedResults.some(r => JSON.stringify(r) === key)) {
+  
+  // Получаем множитель
+  const multiplier = Number(document.getElementById("quantityMultiplier").value) || 1;
+  const finalCost = cost * multiplier;
+  
+  const key = JSON.stringify({ format, productSize, color, paperType, density, quantity, cost: finalCost, multiplier });
+  if (savedResults.some(r => JSON.stringify({
+    format: r.format, 
+    productSize: r.productSize, 
+    color: r.color, 
+    paperType: r.paperType, 
+    density: r.density, 
+    quantity: r.quantity, 
+    cost: r.cost, 
+    multiplier: r.multiplier || 1
+  }) === key)) {
     alert("❗ Такой вариант уже запомнен.");
     return;
   }
+  
   const customPaperPrice = paperType === "designer" || paperType === "adhesive" 
                        ? Number(document.getElementById("customPaperPrice").value || 0) 
                        : 0;
   
   savedResults.push({
-    format, productSize, color, paperType, density, quantity, cost,
+    format, productSize, color, paperType, density, quantity, 
+    cost: finalCost, // Сохраняем уже умноженную стоимость
+    originalCost: cost, // Сохраняем оригинальную стоимость для справки
+    multiplier, // Сохраняем множитель
     productType: selectedProductType,
     cuttingEnabled, laminationEnabled, laminationSides,
     scoreEnabled, foldingEnabled, diecutEnabled, uvLacquerEnabled, embossingEnabled, assemblyEnabled,
-    priceOverride: null, // <-- новое поле
-    customPaperPrice    // <-- добавим цену пользовательской бумаги
+    priceOverride: null,
+    customPaperPrice
   });
   renderSavedList();
 }
@@ -819,6 +876,7 @@ function renderSavedList() {
     if (res.assemblyEnabled) postpress.push("Сборка");
     const postpressText = postpress.length ? ", " + postpress.join(", ") : "";
     const title = res.productType ? `${res.productType}, ` : "";
+    const multiplierText = (res.multiplier && res.multiplier > 1) ? ` (×${res.multiplier})` : "";
     
     // Отображение типа бумаги с дополнительной информацией для пользовательских типов
     let paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.density} г/м²`;
@@ -829,13 +887,13 @@ function renderSavedList() {
     // Себестоимость
     const divCost = document.createElement("div");
     divCost.className = "saved-item";
-    divCost.innerHTML = `<strong>${title}${res.productSize}</strong>, ${res.color}, ${paperInfo}${postpressText} — ${res.quantity} шт → <b>${cost} руб.</b><hr>`;
+    divCost.innerHTML = `<strong>${title}${res.productSize}${multiplierText}</strong>, ${res.color}, ${paperInfo}${postpressText} — ${res.quantity} шт → <b>${cost} руб.</b><hr>`;
     listCost.appendChild(divCost);
     // Цена продажи (+ кнопка)
     const divPrice = document.createElement("div");
     divPrice.className = "saved-item";
     divPrice.innerHTML = `
-      <strong>${title}${res.productSize}</strong>, ${res.color}, ${paperInfo}${postpressText} — ${res.quantity} шт → 
+      <strong>${title}${res.productSize}${multiplierText}</strong>, ${res.color}, ${paperInfo}${postpressText} — ${res.quantity} шт → 
       <b>${priceWithMarkup.toFixed(2)} руб.</b>
       <button onclick='increasePrice(${index})' style="margin-left: 10px; padding: 4px 8px; font-size: 12px;">+500</button>
       <hr>`;
@@ -843,7 +901,7 @@ function renderSavedList() {
     // Прибыль
     const divProfit = document.createElement("div");
     divProfit.className = "saved-item";
-    divProfit.innerHTML = `<strong>${title}${res.productSize}</strong>, ${res.color}, ${paperInfo}${postpressText} — ${res.quantity} шт → <b>${profit.toFixed(2)} руб.</b><hr>`;
+    divProfit.innerHTML = `<strong>${title}${res.productSize}${multiplierText}</strong>, ${res.color}, ${paperInfo}${postpressText} — ${res.quantity} шт → <b>${profit.toFixed(2)} руб.</b><hr>`;
     listProfit.appendChild(divProfit);
   });
 }
@@ -891,6 +949,7 @@ function copyToClipboard() {
     if (res.assemblyEnabled) postpress.push("Сборка");
     const postpressText = postpress.length ? ", " + postpress.join(", ") : "";
     const title = res.productType ? `${res.productType}, ` : "";
+    const multiplierText = (res.multiplier && res.multiplier > 1) ? ` (×${res.multiplier})` : "";
     
     // Отображение типа бумаги с дополнительной информацией для пользовательских типов
     let paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.density} г/м²`;
@@ -898,7 +957,7 @@ function copyToClipboard() {
       paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.customPaperPrice} руб/лист`;
     }
     
-    text += `${title}${res.productSize}, ${res.color}, ${paperInfo}${postpressText} — ${res.quantity} шт → ${formattedPrice} руб.\n`;
+    text += `${title}${res.productSize}${multiplierText}, ${res.color}, ${paperInfo}${postpressText} — ${res.quantity} шт → ${formattedPrice} руб.\n`;
   });
   navigator.clipboard.writeText(text).then(() => {
     alert("Цены скопированы в буфер обмена!");
@@ -1164,6 +1223,26 @@ function generatePriceListByFormatsWithSellingPrice() {
   });
 
   window.scrollTo({ top: container.offsetTop, behavior: "smooth" });
+}
+
+// Функция для изменения множителя кнопками +/-
+function changeMultiplier(delta) {
+  const input = document.getElementById("quantityMultiplier");
+  let value = Number(input.value) || 1;
+  value += delta;
+  if (value < 1) value = 1;
+  input.value = value;
+  onMultiplierChange();
+}
+
+// Функция для обработки изменения множителя
+function onMultiplierChange() {
+  const input = document.getElementById("quantityMultiplier");
+  let value = Number(input.value);
+  if (value < 1 || isNaN(value)) {
+    input.value = 1;
+  }
+  onInputChange(); // Пересчитываем всё
 }
   
 window.onload = () => {
