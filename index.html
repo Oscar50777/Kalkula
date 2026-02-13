@@ -262,11 +262,44 @@
   <!-- Запрос клиента -->
   <div style="margin-bottom: 15px;">
     <label>Запрос клиента:</label>
-    <textarea id="clientRequestInput" rows="4" style="width: 100%;">210x297, 50x90, 100x100</textarea>
+    <textarea id="clientRequestInput" rows="4" style="width: 100%;"></textarea>
     <button id="parseRequestButton" onclick="parseRequest()">📋 Разобрать запрос</button>
     <div id="parsedButtons" style="display: none;"></div>
   </div>
+<!-- ОТДЕЛЬНОЕ ОКНО: расчёт листов по форматам -->
+<div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
+  <h3>Расчёт количества листов по форматам</h3>
 
+  <div style="display:flex; gap:10px; margin-top:5px; margin-bottom:10px; flex-wrap:wrap;">
+    <div style="flex:1; min-width:0;">
+      <label>Ширина (мм):</label>
+      <input type="number" id="sheetCalcWidth" placeholder="Ширина" style="width:100%;">
+    </div>
+    <div style="flex:1; min-width:0;">
+      <label>Высота (мм):</label>
+      <input type="number" id="sheetCalcHeight" placeholder="Высота" style="width:100%;">
+    </div>
+    <div style="flex:1; min-width:0;">
+      <label>Тираж (шт):</label>
+      <input type="number" id="sheetCalcQuantity" value="1000" style="width:100%; margin-top:5px;">
+    </div>
+  </div>
+
+  <button onclick="calculateSheetFormats()" style="margin-top:10px;">Рассчитать листы</button>
+
+  <table class="result-table" style="margin-top:15px;">
+    <thead>
+      <tr>
+        <th>Формат листа</th>
+        <th>Изделий на лист</th>
+        <th>Нужно листов</th>
+      </tr>
+    </thead>
+    <tbody id="sheetCalcTableBody">
+      <tr><td colspan="3">Введите размер и тираж, затем нажмите «Рассчитать листы»</td></tr>
+    </tbody>
+  </table>
+</div>
   <!-- Настройка печати -->
   <div style="margin-bottom: 15px;">
     <button onclick="togglePrintSettings()" id="btnPrint">⚙️ Настройка печати ▼</button>
@@ -379,26 +412,20 @@
   <div class="main-container">
     <!-- Левая часть -->
     <div class="left">
-      <label>Ширина (мм):</label>
-      <input type="number" id="width" value="50" oninput="onInputChange();">
-      <label>Высота (мм):</label>
-      <input type="number" id="height" value="90" oninput="onInputChange();">
-      <div class="format-buttons" id="formatButtons">
-        <button onclick="setFormat('50x90')">50×90</button>
-        <button onclick="setFormat('85x55')">85×55</button>
-        <button onclick="setFormat('90x90')">90×90</button>
-        <button onclick="setFormat('70x100')">70×100</button>
-        <button onclick="setFormat('100x100')">100×100</button>
-        <button onclick="setFormat('99x210')">99×210</button>
-        <button onclick="setFormat('105x148')">А6 (105×148)</button>
-        <button onclick="setFormat('148x210')">А5 (148×210)</button>
-        <button onclick="setFormat('210x297')">А4 (210×297)</button>
-        <button onclick="setFormat('297x420')">А3 (297×420)</button>
-        <button onclick="setFormat('420x594')">А2 (420×594)</button>
+      <div style="display:flex; gap:10px; margin-top:5px; margin-bottom:10px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:0;">
+          <label>Ширина (мм):</label>
+          <input type="number" id="width" value="420" oninput="onInputChange();">
+        </div>
+        <div style="flex:1; min-width:0;">
+          <label>Высота (мм):</label>
+          <input type="number" id="height" value="594" oninput="onInputChange();">
+        </div>
+        <div style="flex:1; min-width:0;">
+          <label>Тираж:</label>
+          <input type="number" id="quantity" value="1000" oninput="onInputChange();">
+        </div>
       </div>
-      <!-- Тираж -->
-      <label>Тираж:</label>
-      <input type="number" id="quantity" value="1000" oninput="onInputChange();">
       <div class="quantity-buttons" id="quantityButtons"></div>
       <!-- Цветность -->
       <label>Цветность:</label>
@@ -1445,6 +1472,51 @@
 
   // Периодически отправляем данные родительскому окну
   setInterval(sendLastPriceToParent, 1000);
+  function calculateSheetFormats() {
+  const w = Number(document.getElementById("sheetCalcWidth").value);
+  const h = Number(document.getElementById("sheetCalcHeight").value);
+  const N = Number(document.getElementById("sheetCalcQuantity").value);
+  const tbody = document.getElementById("sheetCalcTableBody");
+
+  tbody.innerHTML = "";
+
+  if (!w || !h || !N) {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td colspan="3">Заполните размеры и тираж.</td>`;
+    tbody.appendChild(row);
+    return;
+  }
+
+  const W = w + 4; // с припуском, как в основном расчёте
+  const H = h + 4;
+
+  sheetFormats.forEach(sheet => {
+    const printW = sheet.printArea.w;
+    const printH = sheet.printArea.h;
+
+    const v1 = Math.floor(printW / W) * Math.floor(printH / H);
+    const v2 = Math.floor(printW / H) * Math.floor(printH / W);
+    const N_opt = Math.max(v1, v2);
+
+    const row = document.createElement("tr");
+
+    if (N_opt === 0) {
+      row.innerHTML = `
+        <td>${formatLabels[sheet.name]}</td>
+        <td colspan="2">Не помещается</td>
+      `;
+    } else {
+      const sheetsNeeded = Math.ceil(N / N_opt);
+      row.innerHTML = `
+        <td>${formatLabels[sheet.name]}</td>
+        <td>${N_opt}</td>
+        <td>${sheetsNeeded}</td>
+      `;
+    }
+
+    tbody.appendChild(row);
+  });
+}
 </script>
 </body>
 </html>
