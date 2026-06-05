@@ -265,6 +265,56 @@
       border-color: var(--primary);
     }
 
+    /* ========== TEMPLATES ========== */
+    .templates-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .template-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      color: var(--primary);
+    }
+    .template-chip:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .template-chip .tmpl-del {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(220,38,38,0.1);
+      color: var(--danger);
+      font-size: 10px;
+      margin-left: 2px;
+      border: none;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .template-chip:hover .tmpl-del {
+      background: rgba(255,255,255,0.3);
+      color: #fff;
+    }
+    .template-empty {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 4px 0;
+    }
+
     /* ========== PRICE LIST ========== */
     .price-qty-card {
       border: 1px solid var(--border);
@@ -709,6 +759,7 @@
   <h1>&#128208; Калькулятор себестоимости <span class="badge">v3.0</span></h1>
   <div class="header-actions">
     <button class="btn btn-primary btn-sm" onclick="openPriceModal()">&#128203; Прайс-лист</button>
+    <button class="btn btn-sm" onclick="openTemplateSaveModal()">&#128190; Сохранить шаблон</button>
     <button class="btn btn-sm" onclick="copyToClipboard()">&#128203; Копировать</button>
   </div>
 </div>
@@ -813,6 +864,16 @@
           <button class="quick-btn" id="ptype_Kalendar" onclick="selectProductType('Календарный блок')">📅 Кал. блок</button>
           <button class="quick-btn" id="ptype_1big3" onclick="selectProductType('Изделие 1 биг 3')">〰 1 биг 3</button>
           <button class="quick-btn active" id="ptype_None" onclick="selectProductType('')">✕ Сброс</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Templates -->
+    <div class="panel" id="templatesPanel" style="display:none;">
+      <div class="panel-header">&#128209; Шаблоны</div>
+      <div class="panel-body">
+        <div class="templates-bar" id="templatesBar">
+          <span class="template-empty">Нет сохранённых шаблонов</span>
         </div>
       </div>
     </div>
@@ -1185,6 +1246,27 @@
 </div>
 
 <input type="hidden" id="densityInput" value="300">
+
+<!-- Save Template Modal -->
+<div class="modal-overlay" id="templateSaveModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>&#128190; Сохранить шаблон</h3>
+      <button class="modal-close" onclick="closeTemplateSaveModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Название шаблона</label>
+        <input type="text" id="templateNameInput" placeholder="Например: Пакет 30x40x12" onkeydown="if(event.key==='Enter')confirmSaveTemplate()">
+        <div class="tag-hint">Все текущие параметры (размер, тираж, цветность, бумага, послепечатка) будут сохранены</div>
+      </div>
+    </div>
+    <div style="padding:10px 18px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:6px;">
+      <button class="btn" onclick="closeTemplateSaveModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="confirmSaveTemplate()">&#128190; Сохранить</button>
+    </div>
+  </div>
+</div>
 
 <!-- Layout Preview Modal -->
 <div class="modal-overlay" id="chartModal">
@@ -2343,8 +2425,214 @@ function copyToClipboard() {
   navigator.clipboard.writeText(text).then(() => alert("Скопировано в буфер обмена!")).catch(() => alert("Ошибка копирования"));
 }
 
+// ========== TEMPLATES ==========
+const TEMPLATES_KEY = "polygraphy_templates_v1";
+
+function openTemplateSaveModal() {
+  document.getElementById("templateNameInput").value = "";
+  document.getElementById("templateSaveModal").classList.add("active");
+  setTimeout(() => document.getElementById("templateNameInput").focus(), 100);
+}
+
+function closeTemplateSaveModal() {
+  document.getElementById("templateSaveModal").classList.remove("active");
+}
+
+function getTemplates() {
+  try { return JSON.parse(localStorage.getItem(TEMPLATES_KEY)) || {}; }
+  catch(e) { return {}; }
+}
+
+function setTemplates(tmpl) {
+  localStorage.setItem(TEMPLATES_KEY, JSON.stringify(tmpl));
+}
+
+function confirmSaveTemplate() {
+  const name = document.getElementById("templateNameInput").value.trim();
+  if (!name) { alert("Введите название шаблона"); return; }
+
+  const tmpl = getTemplates();
+  if (tmpl[name]) { if (!confirm(`Шаблон "${name}" уже существует. Перезаписать?`)) return; }
+
+  tmpl[name] = captureCurrentState();
+  setTemplates(tmpl);
+  closeTemplateSaveModal();
+  renderTemplatesBar();
+}
+
+function captureCurrentState() {
+  return {
+    width: document.getElementById("width").value,
+    height: document.getElementById("height").value,
+    quantity: document.getElementById("quantity").value,
+    sides: s,
+    paperType: document.getElementById("paperType").value,
+    density: document.getElementById("densityInput").value,
+    customPaperPrice: document.getElementById("customPaperPrice").value,
+    paperPricePerKg: document.getElementById("paperPricePerKg").value,
+    markupPercent: document.getElementById("markupPercent").value,
+    quantityMultiplier: document.getElementById("quantityMultiplier").value,
+    productType: selectedProductType,
+    // Postpress
+    cuttingEnabled: document.getElementById("cuttingEnabled")?.checked ?? false,
+    cuttingCost: document.getElementById("cuttingCostSetting")?.value ?? "1",
+    setupCutting: document.getElementById("setupCutting")?.value ?? "300",
+    laminationEnabled: document.getElementById("laminationEnabled")?.checked ?? false,
+    laminationCost: document.getElementById("laminationCost")?.value ?? "12",
+    setupLamination: document.getElementById("setupLamination")?.value ?? "300",
+    softtouchCostSRA3: document.getElementById("softtouchCostSRA3")?.value ?? "30",
+    softtouchCostOther: document.getElementById("softtouchCostOther")?.value ?? "50",
+    laminationType: currentLaminationType,
+    laminationSides: currentLaminationSides,
+    scoreEnabled: document.getElementById("scoreEnabled")?.checked ?? false,
+    scoreCost: document.getElementById("scoreCost")?.value ?? "2",
+    setupScore: document.getElementById("setupScore")?.value ?? "300",
+    scoreCount: document.getElementById("scoreCountInput")?.value ?? "2",
+    foldingEnabled: document.getElementById("foldingEnabled")?.checked ?? false,
+    foldingCost: document.getElementById("foldingCostSetting")?.value ?? "1",
+    setupFolding: document.getElementById("setupFolding")?.value ?? "300",
+    diecutEnabled: document.getElementById("diecutEnabled")?.checked ?? false,
+    diecutCost: document.getElementById("diecutCostSetting")?.value ?? "5",
+    setupDiecut: document.getElementById("setupDiecut")?.value ?? "5000",
+    diecutStampCost: document.getElementById("diecutStampCostSetting")?.value ?? "5500",
+    diecutPerStamp: document.getElementById("diecutPerStamp")?.value ?? "1",
+    uvLacquerEnabled: document.getElementById("uvLacquerEnabled")?.checked ?? false,
+    uvLacquerCost: document.getElementById("uvLacquerCostSetting")?.value ?? "10",
+    setupUvLacquer: document.getElementById("setupUvLacquer")?.value ?? "5000",
+    embossingEnabled: document.getElementById("embossingEnabled")?.checked ?? false,
+    embossingCost: document.getElementById("embossingCostSetting")?.value ?? "10",
+    setupEmbossing: document.getElementById("setupEmbossing")?.value ?? "4500",
+    embossingKlischeCost: document.getElementById("embossingKlischeCostSetting")?.value ?? "2000",
+    assemblyEnabled: document.getElementById("assemblyEnabled")?.checked ?? false,
+    assemblyCost: document.getElementById("assemblyCostSetting")?.value ?? "5",
+    setupAssembly: document.getElementById("setupAssembly")?.value ?? "300",
+    // Print settings
+    printCostZ: document.getElementById("printCostZ")?.value ?? "15",
+    setupPrintZ: document.getElementById("setupPrintZ")?.value ?? "300",
+    printCostE: document.getElementById("printCostE")?.value ?? "50",
+    setupPrintE: document.getElementById("setupPrintE")?.value ?? "500",
+    printCostOffsetA2: document.getElementById("printCostOffsetA2")?.value ?? "2",
+    setupPrintOffsetA2: document.getElementById("setupPrintOffsetA2")?.value ?? "10000",
+    savedAt: new Date().toLocaleString("ru-RU")
+  };
+}
+
+function applyTemplate(name) {
+  const tmpl = getTemplates()[name];
+  if (!tmpl) return;
+  const t = tmpl;
+
+  // Basic params
+  if (t.width !== undefined) document.getElementById("width").value = t.width;
+  if (t.height !== undefined) document.getElementById("height").value = t.height;
+  if (t.quantity !== undefined) document.getElementById("quantity").value = t.quantity;
+  if (t.sides !== undefined) setSides(t.sides);
+  if (t.paperType !== undefined) {
+    document.getElementById("paperType").value = t.paperType;
+    updatePaperOptions();
+  }
+  if (t.density !== undefined) {
+    document.getElementById("densityInput").value = t.density;
+    // Try to activate the right density button
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (btn.textContent.trim() === t.density + " г/м\u00B2") btn.click();
+    });
+  }
+  if (t.customPaperPrice !== undefined) document.getElementById("customPaperPrice").value = t.customPaperPrice;
+  if (t.paperPricePerKg !== undefined) document.getElementById("paperPricePerKg").value = t.paperPricePerKg;
+  if (t.markupPercent !== undefined) document.getElementById("markupPercent").value = t.markupPercent;
+  if (t.quantityMultiplier !== undefined) document.getElementById("quantityMultiplier").value = t.quantityMultiplier;
+  if (t.productType !== undefined) selectProductType(t.productType);
+
+  // Postpress checkboxes
+  const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+  setChk("cuttingEnabled", t.cuttingEnabled);
+  setChk("laminationEnabled", t.laminationEnabled);
+  setChk("scoreEnabled", t.scoreEnabled);
+  setChk("foldingEnabled", t.foldingEnabled);
+  setChk("diecutEnabled", t.diecutEnabled);
+  setChk("uvLacquerEnabled", t.uvLacquerEnabled);
+  setChk("embossingEnabled", t.embossingEnabled);
+  setChk("assemblyEnabled", t.assemblyEnabled);
+
+  // Postpress values
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+  setVal("cuttingCostSetting", t.cuttingCost);
+  setVal("setupCutting", t.setupCutting);
+  setVal("laminationCost", t.laminationCost);
+  setVal("setupLamination", t.setupLamination);
+  setVal("softtouchCostSRA3", t.softtouchCostSRA3);
+  setVal("softtouchCostOther", t.softtouchCostOther);
+  if (t.laminationType) setLaminationType(t.laminationType);
+  if (t.laminationSides) setLaminationSides(t.laminationSides);
+  setVal("scoreCost", t.scoreCost);
+  setVal("setupScore", t.setupScore);
+  setVal("scoreCountInput", t.scoreCount);
+  setVal("foldingCostSetting", t.foldingCost);
+  setVal("setupFolding", t.setupFolding);
+  setVal("diecutCostSetting", t.diecutCost);
+  setVal("setupDiecut", t.setupDiecut);
+  setVal("diecutStampCostSetting", t.diecutStampCost);
+  setVal("diecutPerStamp", t.diecutPerStamp);
+  setVal("uvLacquerCostSetting", t.uvLacquerCost);
+  setVal("setupUvLacquer", t.setupUvLacquer);
+  setVal("embossingCostSetting", t.embossingCost);
+  setVal("setupEmbossing", t.setupEmbossing);
+  setVal("embossingKlischeCostSetting", t.embossingKlischeCost);
+  setVal("assemblyCostSetting", t.assemblyCost);
+  setVal("setupAssembly", t.setupAssembly);
+
+  // Print settings
+  setVal("printCostZ", t.printCostZ);
+  setVal("setupPrintZ", t.setupPrintZ);
+  setVal("printCostE", t.printCostE);
+  setVal("setupPrintE", t.setupPrintE);
+  setVal("printCostOffsetA2", t.printCostOffsetA2);
+  setVal("setupPrintOffsetA2", t.setupPrintOffsetA2);
+
+  onInputChange();
+}
+
+function deleteTemplate(name, event) {
+  event.stopPropagation();
+  if (!confirm(`Удалить шаблон "${name}"?`)) return;
+  const tmpl = getTemplates();
+  delete tmpl[name];
+  setTemplates(tmpl);
+  renderTemplatesBar();
+}
+
+function renderTemplatesBar() {
+  const tmpl = getTemplates();
+  const bar = document.getElementById("templatesBar");
+  const panel = document.getElementById("templatesPanel");
+  const names = Object.keys(tmpl);
+
+  if (names.length === 0) {
+    bar.innerHTML = '<span class="template-empty">Нет сохранённых шаблонов. Нажмите "Сохранить шаблон" в шапке.</span>';
+    panel.style.display = "none";
+    return;
+  }
+
+  panel.style.display = "";
+  bar.innerHTML = "";
+  names.forEach(name => {
+    const chip = document.createElement("span");
+    chip.className = "template-chip";
+    chip.title = `Применить шаблон "${name}" (${tmpl[name].savedAt || ""})`;
+    chip.innerHTML = `${name} <button class="tmpl-del" onclick="deleteTemplate('${name.replace(/'/g, "\\'")}', event)" title="Удалить">\u00D7</button>`;
+    chip.onclick = (e) => { if (e.target.classList.contains("tmpl-del")) return; applyTemplate(name); };
+    bar.appendChild(chip);
+  });
+}
+
+// Init templates on load
+window.addEventListener("load", () => {
+  renderTemplatesBar();
+});
+
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { closePriceModal(); closeChartModal(); }
+  if (e.key === "Escape") { closePriceModal(); closeChartModal(); closeTemplateSaveModal(); }
 });
 </script>
 
