@@ -21,6 +21,175 @@
       --radius: 6px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ========== LANDING PAGE ========== */
+    .landing-page {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+      z-index: 1000;
+      overflow-y: auto;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+    .landing-page.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .landing-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .landing-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .landing-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .landing-header p {
+      font-size: 15px;
+      color: var(--text-muted);
+    }
+    .landing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      align-content: start;
+    }
+    @media (max-width: 1024px) {
+      .landing-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .landing-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      .landing-container { padding: 24px 14px; }
+      .landing-header h1 { font-size: 22px; }
+    }
+    .product-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: var(--shadow);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .product-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-lg);
+      color: var(--primary);
+    }
+    .product-card.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Product submenu panel - only selected one is visible */
+    .submenus-container {
+      margin-top: 12px;
+    }
+    .product-submenu {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+      display: none;
+    }
+    .product-submenu.open {
+      display: block;
+      border-color: var(--primary);
+      border-width: 2px;
+    }
+    .product-submenu .submenu-section {
+      display: inline-block;
+      margin-right: 20px;
+      margin-bottom: 10px;
+      vertical-align: top;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .submenu-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .submenu-section {
+      margin-bottom: 14px;
+    }
+    .submenu-section label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .submenu-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .submenu-buttons .quick-btn {
+      font-size: 12px;
+      padding: 8px 14px;
+      font-weight: 600;
+    }
+    .submenu-buttons .quick-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .submenu-go {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+    }
+    .submenu-info {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #f8fafc;
+      border-radius: var(--radius);
+    }
+    .landing-footer {
+      text-align: center;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* ========== MAIN APP ========== */
+    .main-app {
+      opacity: 0;
+      transition: opacity 0.35s ease 0.1s;
+    }
+    .main-app.visible {
+      opacity: 1;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
       background: var(--bg);
@@ -248,23 +417,6 @@
       border-radius: var(--radius);
     }
 
-    /* ========== PRODUCT TYPE BUTTONS ========== */
-    .product-types {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-    }
-    .product-types .quick-btn {
-      font-size: 11px;
-      padding: 8px 4px;
-      font-weight: 600;
-    }
-    .product-types .quick-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
     /* ========== TEMPLATES ========== */
     .templates-bar {
       display: flex;
@@ -426,22 +578,59 @@
       margin-top: 8px;
     }
     .tag {
-      padding: 3px 8px;
+      padding: 5px 10px;
       background: #eff6ff;
       color: var(--primary);
       border: 1px solid #bfdbfe;
-      border-radius: 12px;
-      font-size: 11px;
+      border-radius: 14px;
+      font-size: 12px;
       cursor: pointer;
       font-weight: 500;
       transition: all 0.12s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      user-select: none;
     }
-    .tag:hover { background: #dbeafe; }
+    .tag:hover { background: #dbeafe; border-color: var(--primary); }
     .tag.active {
       background: var(--primary);
       color: white;
       border-color: var(--primary);
     }
+    .tag b {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      background: rgba(37, 99, 235, 0.15);
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .tag.active b { background: rgba(255,255,255,0.25); color: white; }
+
+    /* Format presets grid */
+    .format-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .format-grid .quick-btn {
+      font-size: 10px;
+      padding: 5px 2px;
+      font-weight: 600;
+    }
+    .format-grid .quick-btn .fmt-dim {
+      display: block;
+      font-size: 9px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+    .format-grid .quick-btn:hover .fmt-dim { color: white; }
 
     /* Accordion */
     .accordion-item {
@@ -755,12 +944,305 @@
 </head>
 <body>
 
+<!-- Landing Page -->
+<div class="landing-page" id="landingPage">
+  <div class="landing-container">
+    <div class="landing-header">
+      <h1>&#128208; Калькулятор себестоимости</h1>
+      <p>Выберите изделие и настройте параметры</p>
+    </div>
+    <div class="landing-grid" id="landingGrid">
+      <div class="product-card" id="card_papki" onclick="toggleSubmenu('papki')">&#128448; Папки</div>
+      <div class="product-card" id="card_paket" onclick="toggleSubmenu('paket')">&#128091; Бумажный пакет</div>
+      <div class="product-card" id="card_bloknot" onclick="toggleSubmenu('bloknot')">&#128211; Блокнот</div>
+      <div class="product-card" id="card_listovka" onclick="toggleSubmenu('listovka')">&#128220; Листовка</div>
+      <div class="product-card" id="card_broshyura" onclick="toggleSubmenu('broshyura')">&#128216; Брошюра</div>
+      <div class="product-card" id="card_nakleyka" onclick="toggleSubmenu('nakleyka')">&#127991;&#65039; Наклейка</div>
+      <div class="product-card" id="card_oblozhka" onclick="toggleSubmenu('oblozhka')">&#128240; Обложка</div>
+    </div>
+
+    <!-- Submenus always in DOM, collapsed via max-height (no display:none) -->
+    <div class="submenus-container" id="submenusContainer">
+
+      <!-- Папки -->
+      <div class="product-submenu" id="sub_papki">
+        <div class="submenu-title">&#128448; Папки — А2, картон 300 г/м², штамп 0</div>
+        <div class="submenu-section">
+          <label>Цветность</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="papki_c40" onclick="setPapkiColor('4+0')">4+0</button>
+            <button class="quick-btn" id="papki_c44" onclick="setPapkiColor('4+4')">4+4</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Ламинация</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="papki_lam0" onclick="setPapkiLam('нет')">Нет</button>
+            <button class="quick-btn" id="papki_lam10" onclick="setPapkiLam('1+0')">1+0</button>
+            <button class="quick-btn" id="papki_lam11" onclick="setPapkiLam('1+1')">1+1</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="goPapki(50)">50</button>
+            <button class="quick-btn" onclick="goPapki(100)">100</button>
+            <button class="quick-btn" onclick="goPapki(200)">200</button>
+            <button class="quick-btn" onclick="goPapki(300)">300</button>
+            <button class="quick-btn" onclick="goPapki(500)">500</button>
+            <button class="quick-btn" onclick="goPapki(1000)">1000</button>
+            <button class="quick-btn" onclick="goPapki(3000)">3000</button>
+            <button class="quick-btn" onclick="goPapki(5000)">5000</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Бумажный пакет -->
+      <div class="product-submenu" id="sub_paket">
+        <div class="submenu-title">&#128091; Бумажный пакет — А2, 4+0, лам 1+0, штамп 0, мелованная 200/250г</div>
+        <div class="submenu-section">
+          <label>Размер</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="paket_s1" onclick="setPaketSize('25x35')">25×35×10</button>
+            <button class="quick-btn" id="paket_s2" onclick="setPaketSize('30x40')">30×40×12</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="goPaket(50)">50</button>
+            <button class="quick-btn" onclick="goPaket(100)">100</button>
+            <button class="quick-btn" onclick="goPaket(200)">200</button>
+            <button class="quick-btn" onclick="goPaket(300)">300</button>
+            <button class="quick-btn" onclick="goPaket(500)">500</button>
+            <button class="quick-btn" onclick="goPaket(1000)">1000</button>
+            <button class="quick-btn" onclick="goPaket(3000)">3000</button>
+            <button class="quick-btn" onclick="goPaket(5000)">5000</button>
+          </div>
+        </div>
+        <div class="submenu-info" id="paketInfo">Сборка: 25×35×10 → 50 руб | 30×40×12 → 25 руб</div>
+      </div>
+
+      <!-- Блокнот -->
+      <div class="product-submenu" id="sub_bloknot">
+        <div class="submenu-title">&#128211; Блокнот — 80 г/м², 4+0, 50 листов</div>
+        <div class="submenu-section">
+          <label>Формат</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="bn_f_a5" onclick="setBloknotFormat('A5')">A5 (148×210)</button>
+            <button class="quick-btn" id="bn_f_a4" onclick="setBloknotFormat('A4')">A4 (210×297)</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж (в блокнотах)</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="goBloknot(50)">50</button>
+            <button class="quick-btn" onclick="goBloknot(100)">100</button>
+            <button class="quick-btn" onclick="goBloknot(200)">200</button>
+            <button class="quick-btn" onclick="goBloknot(300)">300</button>
+            <button class="quick-btn" onclick="goBloknot(500)">500</button>
+            <button class="quick-btn" onclick="goBloknot(1000)">1000</button>
+            <button class="quick-btn" onclick="goBloknot(3000)">3000</button>
+            <button class="quick-btn" onclick="goBloknot(5000)">5000</button>
+          </div>
+        </div>
+        <div class="submenu-info">Тираж × 50 = итоговое количество листов. Приладка офсета: 5000 руб.</div>
+      </div>
+
+      <!-- Листовка -->
+      <div class="product-submenu" id="sub_listovka">
+        <div class="submenu-title">&#128220; Листовка</div>
+        <div class="submenu-section">
+          <label>Цветность</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="lv_c40" onclick="setListovkaColor('4+0')">4+0</button>
+            <button class="quick-btn" id="lv_c44" onclick="setListovkaColor('4+4')">4+4</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Формат</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" id="lv_fmt_a6" onclick="setListovkaFormat('A6')">A6</button>
+            <button class="quick-btn active" id="lv_fmt_a5" onclick="setListovkaFormat('A5')">A5</button>
+            <button class="quick-btn" id="lv_fmt_a4" onclick="setListovkaFormat('A4')">A4</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Плотность</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="lv_d_130" onclick="setListovkaDensity(130)">130</button>
+            <button class="quick-btn" id="lv_d_150" onclick="setListovkaDensity(150)">150</button>
+            <button class="quick-btn" id="lv_d_200" onclick="setListovkaDensity(200)">200</button>
+            <button class="quick-btn" id="lv_d_300" onclick="setListovkaDensity(300)">300</button>
+          </div>
+        </div>
+        <div class="submenu-go">
+          <button class="btn btn-primary" onclick="goListovka()">&#128260; Рассчитать листовку</button>
+        </div>
+      </div>
+
+      <!-- Брошюра -->
+      <div class="product-submenu" id="sub_broshyura">
+        <div class="submenu-title">&#128216; Брошюра — 4+4, 150 г/м², 420×597</div>
+        <div class="submenu-section">
+          <label>Формат</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="br_f_a4" onclick="setBroshyuraFormat('A4')">A4</button>
+            <button class="quick-btn" id="br_f_a5" onclick="setBroshyuraFormat('A5')">A5</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Полос</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="setBroshyuraPolos(4)">4</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(8)">8</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(12)">12</button>
+            <button class="quick-btn active" onclick="setBroshyuraPolos(16)">16</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(20)">20</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(24)">24</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(28)">28</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(32)">32</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(36)">36</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(40)">40</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(44)">44</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(48)">48</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(52)">52</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(56)">56</button>
+            <button class="quick-btn" onclick="setBroshyuraPolos(60)">60</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="setBroshyuraQty(50)">50</button>
+            <button class="quick-btn" onclick="setBroshyuraQty(100)">100</button>
+            <button class="quick-btn" onclick="setBroshyuraQty(200)">200</button>
+            <button class="quick-btn" onclick="setBroshyuraQty(300)">300</button>
+            <button class="quick-btn" onclick="setBroshyuraQty(500)">500</button>
+            <button class="quick-btn active" onclick="setBroshyuraQty(1000)">1000</button>
+            <button class="quick-btn" onclick="setBroshyuraQty(3000)">3000</button>
+            <button class="quick-btn" onclick="setBroshyuraQty(5000)">5000</button>
+          </div>
+        </div>
+        <div class="submenu-go">
+          <button class="btn btn-primary" onclick="goBroshyura()">&#128260; Рассчитать брошюру</button>
+        </div>
+        <div class="submenu-info" id="broshyuraInfo">A4: множитель = полос/8 &nbsp;|&nbsp; A5: множитель = полос/16 &nbsp;|&nbsp; Для формата Z множитель удваивается</div>
+      </div>
+
+      <!-- Наклейка -->
+      <div class="product-submenu" id="sub_nakleyka">
+        <div class="submenu-title">&#127991;&#65039; Наклейка — 4+0</div>
+        <div class="submenu-section">
+          <label>Материал</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="nk_m_paper" onclick="setNakleykaMaterial('paper')">Самокл. бумага</button>
+            <button class="quick-btn" id="nk_m_film" onclick="setNakleykaMaterial('film')">Самокл. плёнка</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Формат</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="nk_f_a7" onclick="setNakleykaFormat('A7')">A7 (74×105)</button>
+            <button class="quick-btn" id="nk_f_a6" onclick="setNakleykaFormat('A6')">A6 (105×148)</button>
+            <button class="quick-btn" id="nk_f_a5" onclick="setNakleykaFormat('A5')">A5 (148×210)</button>
+            <button class="quick-btn" id="nk_f_a4" onclick="setNakleykaFormat('A4')">A4 (210×297)</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="goNakleyka(50)">50</button>
+            <button class="quick-btn" onclick="goNakleyka(100)">100</button>
+            <button class="quick-btn" onclick="goNakleyka(200)">200</button>
+            <button class="quick-btn" onclick="goNakleyka(300)">300</button>
+            <button class="quick-btn" onclick="goNakleyka(500)">500</button>
+            <button class="quick-btn" onclick="goNakleyka(1000)">1000</button>
+            <button class="quick-btn" onclick="goNakleyka(3000)">3000</button>
+            <button class="quick-btn" onclick="goNakleyka(5000)">5000</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Обложка -->
+      <div class="product-submenu" id="sub_oblozhka">
+        <div class="submenu-title">&#128240; Обложка — 200/250/300 г, 4+0/4+4, лам</div>
+        <div class="submenu-section">
+          <label>Формат</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="ob_f_a5" onclick="setOblozhkaFormat('A5')">A5</button>
+            <button class="quick-btn" id="ob_f_a4" onclick="setOblozhkaFormat('A4')">A4</button>
+            <button class="quick-btn" id="ob_f_a3" onclick="setOblozhkaFormat('A3')">A3</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Плотность</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="ob_d_200" onclick="setOblozhkaDensity(200)">200</button>
+            <button class="quick-btn" id="ob_d_250" onclick="setOblozhkaDensity(250)">250</button>
+            <button class="quick-btn" id="ob_d_300" onclick="setOblozhkaDensity(300)">300</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Цветность</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="ob_c40" onclick="setOblozhkaColor('4+0')">4+0</button>
+            <button class="quick-btn" id="ob_c44" onclick="setOblozhkaColor('4+4')">4+4</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Ламинация</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="ob_lam0" onclick="setOblozhkaLam('нет')">Нет</button>
+            <button class="quick-btn" id="ob_lam10" onclick="setOblozhkaLam('1+0')">1+0</button>
+            <button class="quick-btn" id="ob_lam11" onclick="setOblozhkaLam('1+1')">1+1</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="goOblozhka(50)">50</button>
+            <button class="quick-btn" onclick="goOblozhka(100)">100</button>
+            <button class="quick-btn" onclick="goOblozhka(200)">200</button>
+            <button class="quick-btn" onclick="goOblozhka(300)">300</button>
+            <button class="quick-btn" onclick="goOblozhka(500)">500</button>
+            <button class="quick-btn" onclick="goOblozhka(1000)">1000</button>
+            <button class="quick-btn" onclick="goOblozhka(3000)">3000</button>
+            <button class="quick-btn" onclick="goOblozhka(5000)">5000</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="landing-footer">
+      <button class="btn" onclick="skipLanding()">&#9881;&#65039; Произвольные параметры</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div class="main-app" id="mainApp">
+
 <div class="app-header">
   <h1>&#128208; Калькулятор себестоимости <span class="badge">v3.0</span></h1>
   <div class="header-actions">
+    <button class="btn btn-sm" onclick="showLanding()">&#8592; Изделия</button>
     <button class="btn btn-primary btn-sm" onclick="openPriceModal()">&#128203; Прайс-лист</button>
     <button class="btn btn-sm" onclick="openTemplateSaveModal()">&#128190; Сохранить шаблон</button>
     <button class="btn btn-sm" onclick="copyToClipboard()">&#128203; Копировать</button>
+  </div>
+</div>
+
+<!-- Client Request (full width) -->
+<div class="panel request-box" style="max-width:1600px; margin:16px auto 0; width:calc(100% - 32px);">
+  <div class="panel-header">&#128221; Запрос клиента</div>
+  <div class="panel-body">
+    <textarea id="clientRequestInput" placeholder="Например: 1000 визиток 90x50, мелованка 300, 4+4..."></textarea>
+    <div class="request-actions">
+      <button class="btn btn-primary btn-sm w-full" onclick="parseRequest()">&#128269; Разобрать</button>
+      <button class="btn btn-sm" onclick="clearRequest()">Очистить</button>
+    </div>
+    <div id="parsedTags" class="parsed-tags"></div>
+    <div class="tag-hint">Нажмите на тег, чтобы применить значение</div>
   </div>
 </div>
 
@@ -783,6 +1265,11 @@
               <label>Высота, мм</label>
               <input type="number" id="height" value="50" oninput="onInputChange()">
             </div>
+          </div>
+
+          <div class="form-group">
+            <label>Формат</label>
+            <div class="format-grid" id="formatGrid"></div>
           </div>
 
           <div class="form-group">
@@ -852,22 +1339,6 @@
   <!-- ========== COLUMN 2: TOOLS ========== -->
   <div class="col col-tools">
 
-    <!-- Product Types -->
-    <div class="panel">
-      <div class="panel-body">
-        <div class="product-types">
-          <button class="quick-btn" id="ptype_Packet" onclick="selectProductType('Пакет A3')">🛍 Пакет</button>
-          <button class="quick-btn" id="ptype_Bloknot" onclick="selectProductType('Блокнот')">📝 Блокнот</button>
-          <button class="quick-btn" id="ptype_Papka" onclick="selectProductType('Папка')">📁 Папка</button>
-          <button class="quick-btn" id="ptype_Broshyura" onclick="selectProductType('Брошюра')">📘 Брошюра</button>
-          <button class="quick-btn" id="ptype_Korobka" onclick="selectProductType('Коробка')">📦 Коробка</button>
-          <button class="quick-btn" id="ptype_Kalendar" onclick="selectProductType('Календарный блок')">📅 Кал. блок</button>
-          <button class="quick-btn" id="ptype_1big3" onclick="selectProductType('Изделие 1 биг 3')">〰 1 биг 3</button>
-          <button class="quick-btn active" id="ptype_None" onclick="selectProductType('')">✕ Сброс</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Templates -->
     <div class="panel" id="templatesPanel" style="display:none;">
       <div class="panel-header">&#128209; Шаблоны</div>
@@ -875,20 +1346,6 @@
         <div class="templates-bar" id="templatesBar">
           <span class="template-empty">Нет сохранённых шаблонов</span>
         </div>
-      </div>
-    </div>
-
-    <!-- Client Request -->
-    <div class="panel request-box">
-      <div class="panel-header">&#128221; Запрос клиента</div>
-      <div class="panel-body">
-        <textarea id="clientRequestInput" placeholder="Например: 1000 визиток 90x50, мелованка 300, 4+4..."></textarea>
-        <div class="request-actions">
-          <button class="btn btn-primary btn-sm w-full" onclick="parseRequest()">&#128269; Разобрать</button>
-          <button class="btn btn-sm" onclick="clearRequest()">Очистить</button>
-        </div>
-        <div id="parsedTags" class="parsed-tags"></div>
-        <div class="tag-hint">Нажмите на тег, чтобы применить значение</div>
       </div>
     </div>
 
@@ -1013,34 +1470,6 @@
             <div class="form-group"><label>Настройка</label><input type="number" id="setupAssembly" value="300" oninput="onInputChange()"></div>
           </div>
 
-        </div>
-      </div>
-    </div>
-
-    <!-- Brochure Calculator -->
-    <div class="panel">
-      <div class="accordion-item" id="accordionBrochure">
-        <div class="accordion-header" onclick="toggleAccordion('accordionBrochure')">
-          <span>&#128216; Калькулятор брошюры</span>
-          <span class="accordion-icon">&#9660;</span>
-        </div>
-        <div class="accordion-body">
-          <div class="brochure-formats">
-            <button class="quick-btn" onclick="selectBrochureFormat(this, 'A6')">A6</button>
-            <button class="quick-btn" onclick="selectBrochureFormat(this, 'A5')">A5</button>
-            <button class="quick-btn" onclick="selectBrochureFormat(this, 'A4')">A4</button>
-            <button class="quick-btn" onclick="selectBrochureFormat(this, '210x210')">210x210</button>
-          </div>
-          <div class="brochure-calc">
-            <div class="form-group">
-              <label>Страниц</label>
-              <input type="number" id="brochureInput" oninput="calculateBrochureResult()">
-            </div>
-            <div class="form-group">
-              <label>Листов A3</label>
-              <input type="text" id="brochureOutput" readonly style="background:#f8fafc; font-weight:600;">
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -1171,7 +1600,7 @@
                 <li>Софтач др.: <b>50 &#8381;</b></li>
                 <li>Биговка: <b>2 &#8381;</b> + <b>300 &#8381;</b></li>
                 <li>Фальцовка: <b>1 &#8381;</b> + <b>300 &#8381;</b></li>
-                <li>Вырубка: <b>5 &#8381;</b> + <b>5000 &#8381;</b> + штамп</li>
+                <li>&#9986; В: <b>5 &#8381;</b> + <b>5000 &#8381;</b> + штамп</li>
                 <li>УФ-лак: <b>10 &#8381;</b> + <b>5000 &#8381;</b></li>
                 <li>Тиснение: <b>10 &#8381;</b> + <b>4500 &#8381;</b> + клише</li>
                 <li>Сборка: <b>5 &#8381;</b> + <b>300 &#8381;</b></li>
@@ -1294,9 +1723,68 @@ let s = 1;
 let selectedBrochureFormat = null;
 let savedResults = [];
 let selectedProductType = "";
-let nextDimensionIndex = 0;
+let nextFieldIndex = 0;
+let parsedFields = []; // очередь полей для применения
 let currentLaminationSides = "1+0";
 let currentLaminationType = "gloss"; // "gloss" или "softtouch"
+
+// Standard format presets
+const standardFormats = [
+  { name: "A6",        w: 105, h: 148, label: "A6" },
+  { name: "A5",        w: 148, h: 210, label: "A5" },
+  { name: "A4",        w: 210, h: 297, label: "A4" },
+  { name: "A3",        w: 297, h: 420, label: "A3" },
+  { name: "A2",        w: 420, h: 594, label: "A2" },
+  { name: "100x70",    w: 100, h: 70,  label: "100×70" },
+  { name: "vizitka",   w: 90,  h: 50,  label: "Визитка" },
+  { name: "200x98",    w: 200, h: 98,  label: "200×98" },
+  { name: "200x200",   w: 200, h: 200, label: "200×200" },
+  { name: "210x100",   w: 210, h: 100, label: "210×100" },
+  { name: "210x210",   w: 210, h: 210, label: "210×210" },
+];
+
+// Map format names for parser (lowercase keys)
+const formatNameMap = {
+  "а6": "A6", "a6": "A6",
+  "а5": "A5", "a5": "A5",
+  "а4": "A4", "a4": "A4",
+  "а3": "A3", "a3": "A3",
+  "а2": "A2", "a2": "A2",
+  "100х70": "100x70", "100x70": "100x70",
+  "визитка": "vizitka", "визитки": "vizitka",
+  "vizitka": "vizitka",
+  "200х98": "200x98", "200x98": "200x98",
+  "200х200": "200x200", "200x200": "200x200",
+  "210х100": "210x100", "210x100": "210x100",
+  "210х210": "210x210", "210x210": "210x210",
+  "евро": "210x100", "euro": "210x100",
+};
+
+function applyFormat(name) {
+  const fmt = standardFormats.find(f => f.name === name);
+  if (!fmt) return;
+  document.getElementById("width").value = fmt.w;
+  document.getElementById("height").value = fmt.h;
+  // Update active state on buttons
+  document.querySelectorAll("#formatGrid .quick-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.fmt === name);
+  });
+  onInputChange();
+}
+
+function renderFormatGrid() {
+  const grid = document.getElementById("formatGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  standardFormats.forEach(fmt => {
+    const btn = document.createElement("button");
+    btn.className = "quick-btn";
+    btn.dataset.fmt = fmt.name;
+    btn.innerHTML = `${fmt.label}<span class="fmt-dim">${fmt.w}×${fmt.h}</span>`;
+    btn.onclick = () => applyFormat(fmt.name);
+    grid.appendChild(btn);
+  });
+}
 
 // Price list basket
 let priceBasket = [];
@@ -1441,8 +1929,8 @@ function updatePaperOptions() {
 
 function getPaperPriceByTypeAndDensity(paperType, density) {
   if (paperType === "offset") return 125;
-  if (paperType === "matt") return density <= 200 ? 135 : 155;
-  if (paperType === "cardboard") return 160;
+  if (paperType === "matt") return 135;
+  if (paperType === "cardboard") return 140;
   return 0;
 }
 
@@ -1705,8 +2193,9 @@ function calculate() {
   }).join("");
   tbody.appendChild(tr);
 
+  const productPrefix = currentProductName ? currentProductName + " \u2022 " : "";
   document.getElementById("resultsSummary").textContent =
-    `${w}\u00D7${h} \u2022 ${N} \u2022 ${s === 1 ? "4+0" : "4+4"} \u2022 ${getPaperTypeLabel(paperType)} ${density}`;
+    `${productPrefix}${w}\u00D7${h} \u2022 ${N} \u2022 ${s === 1 ? "4+0" : "4+4"} \u2022 ${getPaperTypeLabel(paperType)} ${density}`;
 }
 
 function rememberResult(format, productSize, color, paperType, density, quantity, cost) {
@@ -1727,7 +2216,9 @@ function rememberResult(format, productSize, color, paperType, density, quantity
   
   savedResults.push({
     format, productSize, color, paperType, density, quantity,
+    userQty: currentUserQty || quantity,  // исходный тираж пользователя
     cost: finalCost, originalCost: cost, multiplier,
+    productName: currentProductName,
     productType: selectedProductType,
     cuttingEnabled: document.getElementById("cuttingEnabled")?.checked ?? false,
     laminationEnabled: document.getElementById("laminationEnabled")?.checked ?? false,
@@ -1749,62 +2240,55 @@ function rememberResult(format, productSize, color, paperType, density, quantity
 function renderSavedList() {
   const tbody = document.getElementById("savedTableBody");
   tbody.innerHTML = "";
-  
+
   if (savedResults.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-muted" style="text-align:center;">Нет сохраненных расчетов</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-muted" style="text-align:center;">\u041D\u0435\u0442 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043D\u044B\u0445 \u0440\u0430\u0441\u0447\u0435\u0442\u043E\u0432</td></tr>`;
     return;
   }
-  
+
   const markupFactor = (100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
-  
+
   savedResults.forEach((res, index) => {
     const cost = res.cost;
     const hasOverride = res.priceOverride !== null;
     const priceWithMarkup = hasOverride ? res.priceOverride : cost * markupFactor;
     const profit = priceWithMarkup - cost;
-    
+
+    const pname = res.productName || res.productType || "";
+
+    let paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.density}\u0433`;
+    if (res.paperType === "designer" || res.paperType === "adhesive") {
+      paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.customPaperPrice}\u20BD/\u043B`;
+    }
+
     const postpress = [];
-    if (res.cuttingEnabled) postpress.push("Резка");
+    if (res.cuttingEnabled) postpress.push("\u0420\u0435\u0437\u043A\u0430");
     if (res.laminationEnabled) {
-      const lamLabel = res.laminationType === "softtouch" ? "Софтач" : "Лам";
+      const lamLabel = res.laminationType === "softtouch" ? "\u0421\u043E\u0444\u0442\u0430\u0447" : "\u041B\u0430\u043C";
       postpress.push(lamLabel + " " + res.laminationSides);
     }
-    if (res.scoreEnabled) postpress.push("Биг");
-    if (res.foldingEnabled) postpress.push("Фальц");
-    if (res.diecutEnabled) postpress.push("Выр");
-    if (res.uvLacquerEnabled) postpress.push("УФ");
-    if (res.embossingEnabled) postpress.push("Тисн");
-    if (res.assemblyEnabled) postpress.push("Сбор");
-    
-    let paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.density} г/м\u00B2`;
-    if (res.paperType === "designer" || res.paperType === "adhesive") {
-      paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.customPaperPrice} \u20BD/лист`;
-    }
-    
-    const title = res.productType ? `${res.productType}, ` : "";
-    const multiplierText = (res.multiplier > 1) ? ` \u00D7${res.multiplier}` : "";
-    
+    if (res.scoreEnabled) postpress.push("\u0411\u0438\u0433");
+    if (res.foldingEnabled) postpress.push("\u0424\u0430\u043B\u044C\u0446");
+    if (res.diecutEnabled) postpress.push("\u0412\u044B\u0440\u0443\u0431\u043A\u0430");
+    if (res.uvLacquerEnabled) postpress.push("\u0423\u0424");
+    if (res.embossingEnabled) postpress.push("\u0422\u0438\u0441\u043D");
+    if (res.assemblyEnabled) postpress.push("\u0421\u0431\u043E\u0440");
+
+    const qty = res.userQty || res.quantity;
+
+    const desc = `${pname}, ${res.color}, ${paperInfo}${postpress.length ? ', ' + postpress.join(', ') : ''} \u2014 ${qty} \u0448\u0442 \u2192 ${priceWithMarkup.toFixed(0)} \u20BD`;
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>
-        <div style="font-weight:600;">${title}${res.productSize}${multiplierText}</div>
-        <div class="text-sm text-muted">${res.color}, ${paperInfo}${postpress.length ? ', ' + postpress.join(", ") : ''}</div>
-        <div class="text-sm text-muted">${formatLabels[res.format]}, ${res.quantity} шт.</div>
-      </td>
+      <td><div style="font-weight:600; font-size:13px;">${desc}</div></td>
       <td class="cost-cell">${cost.toFixed(0)} \u20BD</td>
-      <td class="price-cell">
-        ${priceWithMarkup.toFixed(0)} \u20BD
-        ${hasOverride ? '<span style="font-size:10px; color:var(--warning);"> (ручная)</span>' : ''}
-      </td>
+      <td class="price-cell">${priceWithMarkup.toFixed(0)} \u20BD${hasOverride ? '<span style="font-size:10px; color:var(--warning);"> (\u0440\u0443\u0447\u043D\u0430\u044F)</span>' : ''}</td>
       <td class="profit-cell">${profit.toFixed(0)} \u20BD</td>
-      <td>
-        <div class="actions">
-          <button onclick="increasePrice(${index}, 500)" title="+500 \u20BD">+500</button>
-          <button onclick="increasePrice(${index}, 1000)" title="+1000 \u20BD">+1к</button>
-          <button onclick="removeSaved(${index})" title="Удалить" style="color:var(--danger);">\u00D7</button>
-        </div>
-      </td>
-    `;
+      <td><div class="actions">
+        <button onclick="increasePrice(${index}, 500)" title="+500 \u20BD">+500</button>
+        <button onclick="increasePrice(${index}, 1000)" title="+1000 \u20BD">+1\u041A</button>
+        <button onclick="removeSaved(${index})" title="\u0423\u0434\u0430\u043B\u0438\u0442\u044C" style="color:var(--danger);">\u00D7</button>
+      </div></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -1849,62 +2333,147 @@ function onMultiplierChange() {
 }
 
 function parseRequest() {
-  const text = document.getElementById("clientRequestInput").value;
+  const text = document.getElementById("clientRequestInput").value.toLowerCase();
   const container = document.getElementById("parsedTags");
+  const hintEl = container.nextElementSibling; // tag-hint
   container.innerHTML = "";
-  
-  const regex = /(\d+)(?:[x\u00D7\u0445](\d+))?/g;
-  let match;
-  const values = [];
-  
-  while ((match = regex.exec(text)) !== null) {
-    if (match[2]) {
-      values.push({ val: parseInt(match[1]), type: "size" });
-      values.push({ val: parseInt(match[2]), type: "size" });
-    } else {
-      values.push({ val: parseInt(match[1]), type: "number" });
+  parsedFields = [];
+  nextFieldIndex = 0;
+
+  // ===== 1. Форматы: А4, А6, визитка, евро, 200x98 и т.д. =====
+  let formatDetected = false;
+  for (const [key, fmtName] of Object.entries(formatNameMap)) {
+    // Escape special regex chars in key, then create word-boundary regex
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const fmtRegex = new RegExp('(?:^|[^\\w])' + escaped + '(?:[^\\w]|$)', 'i');
+    if (fmtRegex.test(text)) {
+      const fmt = standardFormats.find(f => f.name === fmtName);
+      if (fmt) {
+        parsedFields.push({ key: "format", label: "\u0444\u043E\u0440\u043C\u0430t " + fmt.label, val: fmtName, display: fmt.label + " (" + fmt.w + "\u00D7" + fmt.h + ")", isFormat: true });
+        formatDetected = true;
+        break; // only first match
+      }
     }
   }
-  
-  if (values.length === 0) {
-    container.innerHTML = `<span class="text-muted text-sm">Числа не найдены</span>`;
+
+  // ===== 2. Размеры: 90*200мм, 90×200, 90 x 200, 90х200 =====
+  // Skip if format already detected
+  if (!formatDetected) {
+    const sizeRegex = /(\d{1,4})\s*[\*\u00D7x\u0445\s]\s*(\d{1,4})\s*(?:\u043C\u043C|mm|\u043C)?/gi;
+    let sizeMatch = sizeRegex.exec(text);
+    if (sizeMatch) {
+      parsedFields.push({ key: "width",  label: "\u0448\u0438\u0440\u0438\u043D\u0430",  val: parseInt(sizeMatch[1]), display: sizeMatch[1] + " \u043C\u043C" });
+      parsedFields.push({ key: "height", label: "\u0432\u044B\u0441\u043E\u0442\u0430", val: parseInt(sizeMatch[2]), display: sizeMatch[2] + " \u043C\u043C" });
+    }
+  }
+
+  // ===== 3. Цветность: 4+0, 4+4, 1+0, 1+1 =====
+  const colorRegex = /(4\s*\+\s*4|4\s*\+\s*0|1\s*\+\s*1|1\s*\+\s*0)/;
+  const colorMatch = text.match(colorRegex);
+  if (colorMatch) {
+    const cleanColor = colorMatch[1].replace(/\s/g, ""); // "4+4"
+    parsedFields.push({ key: "color", label: "\u0446\u0432\u0435\u0442\u043D\u043E\u0441\u0442\u044C", val: cleanColor, display: cleanColor, isColor: true });
+  }
+
+  // ===== 3. Плотность: 170гр, 170 г/м², 170г/м2 =====
+  const densityRegex = /(\d{2,4})\s*(?:\u0433\u0440|g\/m?\u00B2?|\u0433\/\u043C\u00B2|\u0433\/\u043C2)/i;
+  const densityMatch = text.match(densityRegex);
+  if (densityMatch) {
+    parsedFields.push({ key: "density", label: "\u043F\u043B\u043E\u0442\u043D\u043E\u0441\u0442\u044C", val: parseInt(densityMatch[1]), display: densityMatch[1] + " \u0433/\u043C\u00B2" });
+  }
+
+  // ===== 4. Тираж: 5000шт, "по 5000", тираж 5000 =====
+  // Сначала ищем "по N" после макетов
+  const qtyRegex = /(\d{2,6})\s*(?:\u0448\u0442|шт|\u0435\u0434|\u0442\u0438\u0440\u0430\u0436|\u044D\u043A\u0437)/i;
+  // Если есть "по 5000", берём число после "по"
+  const poRegex = /\u043F\u043E\s+(\d{2,6})/;
+  const poMatch = text.match(poRegex);
+  if (poMatch) {
+    parsedFields.push({ key: "quantity", label: "\u0442\u0438\u0440\u0430\u0436", val: parseInt(poMatch[1]), display: poMatch[1] + " \u0448\u0442." });
+  } else {
+    const qtyMatch = text.match(qtyRegex);
+    if (qtyMatch) {
+      parsedFields.push({ key: "quantity", label: "\u0442\u0438\u0440\u0430\u0436", val: parseInt(qtyMatch[1]), display: qtyMatch[1] + " \u0448\u0442." });
+    }
+  }
+
+  // ===== Если ничего не найдено =====
+  if (parsedFields.length === 0) {
+    container.innerHTML = `<span class="text-muted text-sm">\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0440\u0430\u0441\u043F\u043E\u0437\u043D\u0430\u0442\u044C. \u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435: "90*200\u043C\u043C, 170\u0433\u0440, 4+4, 5000\u0448\u0442"</span>`;
+    if (hintEl) hintEl.style.display = "none";
     return;
   }
-  
-  values.forEach((item, idx) => {
+
+  // ===== Создаём теги с номерами =====
+  parsedFields.forEach((field, idx) => {
     const tag = document.createElement("span");
     tag.className = "tag";
-    tag.textContent = item.val + (item.type === "size" ? " мм" : "");
-    tag.onclick = () => applyParsedValue(item.val, tag);
+    tag.dataset.index = idx;
+    tag.dataset.key = field.key;
+    tag.innerHTML = `<b>${idx + 1}</b> ${field.display}`;
+    tag.title = `\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u0434\u043B\u044F: ${field.label}`;
+    tag.onclick = () => applyParsedField(idx);
     container.appendChild(tag);
   });
-  
-  nextDimensionIndex = 0;
+
+  // ===== Обновляем подсказку =====
+  const orderLabels = parsedFields.map((f, i) => `${i + 1}-${f.label}`).join("  \u2022  ");
+  if (hintEl) {
+    hintEl.style.display = "";
+    hintEl.innerHTML = `<b>\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u0432 \u043F\u043E\u0440\u044F\u0434\u043A\u0435:</b> ${orderLabels}`;
+  }
 }
 
-function applyParsedValue(value, tagEl) {
-  document.querySelectorAll("#parsedTags .tag").forEach(t => t.classList.remove("active"));
-  tagEl.classList.add("active");
-  
-  const fields = ["width", "height", "quantity", "densityInput"];
-  const fieldId = fields[nextDimensionIndex];
-  
-  if (fieldId === "densityInput") {
-    document.getElementById("densityInput").value = value;
-    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
-      if (btn.textContent.trim() === value + " г/м\u00B2") btn.click();
-    });
-  } else {
-    document.getElementById(fieldId).value = value;
+function applyParsedField(index) {
+  const field = parsedFields[index];
+  if (!field) return;
+
+  // Highlight tag
+  document.querySelectorAll("#parsedTags .tag").forEach((t, i) => {
+    t.classList.toggle("active", i === index);
+  });
+
+  // Apply value
+  switch (field.key) {
+    case "width":
+      document.getElementById("width").value = field.val;
+      break;
+    case "height":
+      document.getElementById("height").value = field.val;
+      break;
+    case "color":
+      if (field.val === "4+0") setSides(1);
+      else if (field.val === "4+4") setSides(2);
+      else if (field.val === "1+0") setSides(1); // 1+0 = одна сторона
+      else if (field.val === "1+1") setSides(2); // 1+1 = две стороны
+      break;
+    case "density":
+      document.getElementById("densityInput").value = field.val;
+      document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+        if (parseInt(btn.textContent) === field.val) btn.click();
+      });
+      break;
+    case "quantity":
+      document.getElementById("quantity").value = field.val;
+      break;
+    case "format":
+      applyFormat(field.val);
+      break;
   }
-  
-  nextDimensionIndex = (nextDimensionIndex + 1) % 4;
+
   onInputChange();
 }
 
 function clearRequest() {
   document.getElementById("clientRequestInput").value = "";
   document.getElementById("parsedTags").innerHTML = "";
+  parsedFields = [];
+  nextFieldIndex = 0;
+  const hintEl = document.querySelector("#parsedTags + .tag-hint");
+  if (hintEl) {
+    hintEl.style.display = "";
+    hintEl.textContent = "\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u043D\u0430 \u0442\u0435\u0433, \u0447\u0442\u043E\u0431\u044B \u043F\u0440\u0438\u043C\u0435\u043D\u0438\u0442\u044C \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435";
+  }
 }
 
 function selectBrochureFormat(btn, format) {
@@ -2407,7 +2976,7 @@ function copyToClipboard() {
     }
     if (res.scoreEnabled) postpress.push("Биг");
     if (res.foldingEnabled) postpress.push("Фальц");
-    if (res.diecutEnabled) postpress.push("Выр");
+    if (res.diecutEnabled) postpress.push("Вырубка");
     if (res.uvLacquerEnabled) postpress.push("УФ");
     if (res.embossingEnabled) postpress.push("Тисн");
     if (res.assemblyEnabled) postpress.push("Сбор");
@@ -2416,7 +2985,7 @@ function copyToClipboard() {
     if (res.paperType === "designer" || res.paperType === "adhesive") {
       paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.customPaperPrice} \u20BD/лист`;
     }
-    const title = res.productType ? `${res.productType}, ` : "";
+    const title = res.productName ? `${res.productName}, ` : (res.productType ? `${res.productType}, ` : "");
     const mult = res.multiplier > 1 ? ` \u00D7${res.multiplier}` : "";
     
     text += `${title}${res.productSize}${mult}, ${res.color}, ${paperInfo}${postpress.length ? ', ' + postpress.join(", ") : ''} \u2014 ${res.quantity} шт \u2192 ${price.toFixed(0)} \u20BD\n`;
@@ -2629,12 +3198,452 @@ function renderTemplatesBar() {
 // Init templates on load
 window.addEventListener("load", () => {
   renderTemplatesBar();
+  renderFormatGrid();
 });
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { closePriceModal(); closeChartModal(); closeTemplateSaveModal(); }
 });
+// ========== LANDING PAGE ==========
+// ========== LANDING PAGE SUBMENUS ==========
+let activeProduct = null;
+let currentProductName = "";
+let currentUserQty = 0;  // исходный тираж пользователя (для отображения)
+let papkiColor = "4+0", papkiLam = "нет";
+let paketSize = "25x35";
+let bloknotFormat = "A5";
+let listovkaColor = "4+0", listovkaFormat = "A5", listovkaDensity = 130;
+let broshyuraFormat = "A4";
+let broshyuraPolos = 16;
+let broshyuraQty = 1000;
+let nakleykaMaterial = "paper";
+let nakleykaFormat = "A7";
+let oblozhkaFormat = "A5";
+let oblozhkaDensity = 200;
+let oblozhkaColor = "4+0";
+let oblozhkaLam = "нет";
+
+function toggleSubmenu(product) {
+  const submenu = document.getElementById("sub_" + product);
+  if (!submenu) return;
+  const wasOpen = submenu.classList.contains("open");
+  // Close all submenus and cards
+  document.querySelectorAll(".product-submenu").forEach(s => s.classList.remove("open"));
+  document.querySelectorAll(".product-card").forEach(c => c.classList.remove("active"));
+  if (!wasOpen) {
+    submenu.classList.add("open");
+    document.getElementById("card_" + product).classList.add("active");
+    activeProduct = product;
+  } else {
+    activeProduct = null;
+  }
+}
+
+// ===== ПАПКИ =====
+function setPapkiColor(val) {
+  papkiColor = val;
+  document.getElementById("papki_c40").classList.toggle("active", val === "4+0");
+  document.getElementById("papki_c44").classList.toggle("active", val === "4+4");
+}
+function setPapkiLam(val) {
+  papkiLam = val;
+  document.getElementById("papki_lam0").classList.toggle("active", val === "нет");
+  document.getElementById("papki_lam10").classList.toggle("active", val === "1+0");
+  document.getElementById("papki_lam11").classList.toggle("active", val === "1+1");
+}
+function goPapki(qty) {
+  currentProductName = "Папки";
+  currentUserQty = qty;
+  // Base: А2 (420×594), картон 300г, штамп 0
+  document.getElementById("width").value = 420;
+  document.getElementById("height").value = 594;
+  document.getElementById("quantity").value = qty;
+  setSides(papkiColor === "4+4" ? 2 : 1);
+  document.getElementById("paperType").value = "cardboard";
+  updatePaperOptions();
+  setTimeout(() => {
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === 300) btn.click();
+    });
+    // Postpress
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    setChk("cuttingEnabled", true);
+    setChk("diecutEnabled", true);
+    setVal("diecutStampCostSetting", 0);
+    setVal("diecutCostSetting", 5);
+    setVal("setupDiecut", 5000);
+    setVal("diecutPerStamp", 1);
+    // Lamination
+    if (papkiLam !== "нет") {
+      setChk("laminationEnabled", true);
+      setLaminationSides(papkiLam);
+      setLaminationType("gloss");
+      setVal("laminationCost", 12);
+      setVal("setupLamination", 300);
+    } else {
+      setChk("laminationEnabled", false);
+    }
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+// ===== БУМАЖНЫЙ ПАКЕТ =====
+function setPaketSize(size) {
+  paketSize = size;
+  document.getElementById("paket_s1").classList.toggle("active", size === "25x35");
+  document.getElementById("paket_s2").classList.toggle("active", size === "30x40");
+  const info = size === "25x35"
+    ? "Сборка: 25×35×10 → 50 руб | Тираж как указан"
+    : "Сборка: 30×40×12 → 25 руб | При тираже 100 — значение ×2";
+  document.getElementById("paketInfo").textContent = info;
+}
+function goPaket(qty) {
+  const sizeLabel = paketSize === "25x35" ? "25×35×10" : "30×40×12";
+  currentProductName = "Бумажный пакет " + sizeLabel;
+  currentUserQty = qty;  // исходный тираж для отображения
+  // Base: А2 (420×594), 4+0, лам 1+0, штамп 0
+  let finalQty = qty;
+  let assemblyCost = 50;
+  if (paketSize === "30x40") {
+    assemblyCost = 25;
+    if (qty <= 300) finalQty = qty * 2;
+  }
+  document.getElementById("width").value = 420;
+  document.getElementById("height").value = 594;
+  document.getElementById("quantity").value = finalQty;
+  setSides(1); // 4+0
+  document.getElementById("paperType").value = "matt";
+  updatePaperOptions();
+  setTimeout(() => {
+    const density = paketSize === "25x35" ? 200 : 250;
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === density) btn.click();
+    });
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    setChk("cuttingEnabled", true);
+    setChk("diecutEnabled", true);
+    setVal("diecutStampCostSetting", 0);
+    setChk("laminationEnabled", true);
+    setLaminationSides("1+0");
+    setLaminationType("gloss");
+    setVal("laminationCost", 12);
+    setVal("setupLamination", 300);
+    setChk("assemblyEnabled", true);
+    setVal("assemblyCostSetting", assemblyCost);
+    setVal("setupAssembly", 300);
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+// ===== БЛОКНОТ =====
+function setBloknotFormat(fmt) {
+  bloknotFormat = fmt;
+  document.getElementById("bn_f_a5").classList.toggle("active", fmt === "A5");
+  document.getElementById("bn_f_a4").classList.toggle("active", fmt === "A4");
+}
+function goBloknot(qty) {
+  const dims = bloknotFormat === "A5" ? { w: 148, h: 210 } : { w: 210, h: 297 };
+  currentProductName = "Блокнот " + bloknotFormat + ", 50 листов, " + dims.w + "×" + dims.h;
+  currentUserQty = qty;  // исходный тираж для отображения
+  // qty в блокнотах, итог = qty * 50 листов
+  const finalQty = qty * 50;
+  document.getElementById("width").value = dims.w;
+  document.getElementById("height").value = dims.h;
+  document.getElementById("quantity").value = finalQty;
+  setSides(1); // 4+0
+  document.getElementById("paperType").value = "offset";
+  updatePaperOptions();
+  setTimeout(() => {
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === 80) btn.click();
+    });
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    setChk("cuttingEnabled", true);
+    // Блокнот: только резка
+    setChk("scoreEnabled", false);
+    setChk("assemblyEnabled", false);
+    setChk("laminationEnabled", false);
+    setChk("foldingEnabled", false);
+    setChk("diecutEnabled", false);
+    setChk("uvLacquerEnabled", false);
+    setChk("embossingEnabled", false);
+    // Приладка офсета
+    document.getElementById("setupPrintOffsetA2").value = 5000;
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+// ===== ЛИСТОВКА =====
+function setListovkaColor(val) {
+  listovkaColor = val;
+  document.getElementById("lv_c40").classList.toggle("active", val === "4+0");
+  document.getElementById("lv_c44").classList.toggle("active", val === "4+4");
+}
+function setListovkaFormat(fmt) {
+  listovkaFormat = fmt;
+  document.getElementById("lv_fmt_a6").classList.toggle("active", fmt === "A6");
+  document.getElementById("lv_fmt_a5").classList.toggle("active", fmt === "A5");
+  document.getElementById("lv_fmt_a4").classList.toggle("active", fmt === "A4");
+}
+function setListovkaDensity(d) {
+  listovkaDensity = d;
+  [130, 150, 200, 300].forEach(v => {
+    document.getElementById("lv_d_" + v).classList.toggle("active", d === v);
+  });
+}
+function goListovka() {
+  currentProductName = "Листовка " + listovkaFormat;
+  currentUserQty = 1000;
+  const fmtDims = { A6: { w: 105, h: 148 }, A5: { w: 148, h: 210 }, A4: { w: 210, h: 297 } };
+  const dims = fmtDims[listovkaFormat] || fmtDims.A5;
+  document.getElementById("width").value = dims.w;
+  document.getElementById("height").value = dims.h;
+  document.getElementById("quantity").value = 1000;
+  setSides(listovkaColor === "4+4" ? 2 : 1);
+  document.getElementById("paperType").value = "matt";
+  updatePaperOptions();
+  setTimeout(() => {
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === listovkaDensity) btn.click();
+    });
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    setChk("cuttingEnabled", true);
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+// ===== БРОШЮРА =====
+function setBroshyuraFormat(fmt) {
+  broshyuraFormat = fmt;
+  document.getElementById("br_f_a4").classList.toggle("active", fmt === "A4");
+  document.getElementById("br_f_a5").classList.toggle("active", fmt === "A5");
+}
+function setBroshyuraPolos(p) {
+  broshyuraPolos = p;
+  document.querySelectorAll("#sub_broshyura .submenu-buttons button[onclick^='setBroshyuraPolos']").forEach(btn => {
+    const val = parseInt(btn.textContent);
+    btn.classList.toggle("active", val === p);
+  });
+}
+function setBroshyuraQty(q) {
+  broshyuraQty = q;
+  document.querySelectorAll("#sub_broshyura .submenu-buttons button[onclick^='setBroshyuraQty']").forEach(btn => {
+    const val = parseInt(btn.textContent);
+    btn.classList.toggle("active", val === q);
+  });
+}
+function goBroshyura() {
+  const polos = broshyuraPolos;
+  const qty = broshyuraQty;
+  currentProductName = "Брошюра " + broshyuraFormat + ", " + polos + " полос";
+  currentUserQty = qty;  // исходный тираж для отображения
+  // 4+4, 150г, 420×597
+  document.getElementById("width").value = 420;
+  document.getElementById("height").value = 597;
+  document.getElementById("quantity").value = qty;
+  setSides(2); // 4+4
+  document.getElementById("paperType").value = "matt";
+  updatePaperOptions();
+  setTimeout(() => {
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === 150) btn.click();
+    });
+    // Множитель
+    let multiplier;
+    if (broshyuraFormat === "A4") {
+      multiplier = polos / 8;
+    } else {
+      multiplier = polos / 16;
+    }
+    // Для формата Z множитель удваивается — Z это цифра SRA3
+    // Z всегда участвует в расчёте, просто множитель ×2
+    // Но пользователь говорит "для формата Z множитель удваивается"
+    // Это значит что если выбран формат Z (SRA3) в результатах — множитель ×2
+    // В целом просто ставим множитель
+    document.getElementById("quantityMultiplier").value = multiplier;
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    setChk("cuttingEnabled", true);
+    // Брошюра: без фальцовки
+    setChk("foldingEnabled", false);
+    // Приладка офсета для брошюры: 14000
+    document.getElementById("setupPrintOffsetA2").value = 14000;
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+// ===== НАКЛЕЙКА =====
+function setNakleykaMaterial(mat) {
+  nakleykaMaterial = mat;
+  document.getElementById("nk_m_paper").classList.toggle("active", mat === "paper");
+  document.getElementById("nk_m_film").classList.toggle("active", mat === "film");
+}
+function setNakleykaFormat(fmt) {
+  nakleykaFormat = fmt;
+  document.getElementById("nk_f_a7").classList.toggle("active", fmt === "A7");
+  document.getElementById("nk_f_a6").classList.toggle("active", fmt === "A6");
+  document.getElementById("nk_f_a5").classList.toggle("active", fmt === "A5");
+  document.getElementById("nk_f_a4").classList.toggle("active", fmt === "A4");
+}
+function goNakleyka(qty) {
+  const matLabel = nakleykaMaterial === "paper" ? "самокл. бумага" : "самокл. плёнка";
+  currentProductName = "Наклейка " + nakleykaFormat + ", " + matLabel;
+  currentUserQty = qty;
+  const fmtDims = { A7: { w: 74, h: 105 }, A6: { w: 105, h: 148 }, A5: { w: 148, h: 210 }, A4: { w: 210, h: 297 } };
+  const dims = fmtDims[nakleykaFormat] || fmtDims.A7;
+  document.getElementById("width").value = dims.w;
+  document.getElementById("height").value = dims.h;
+  document.getElementById("quantity").value = qty;
+  setSides(1); // 4+0
+  document.getElementById("paperType").value = "adhesive";
+  updatePaperOptions();
+  setTimeout(() => {
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    setChk("cuttingEnabled", true);
+    // Наклейка: только резка
+    setChk("diecutEnabled", false);
+    setChk("scoreEnabled", false);
+    setChk("assemblyEnabled", false);
+    setChk("laminationEnabled", false);
+    setChk("foldingEnabled", false);
+    setChk("uvLacquerEnabled", false);
+    setChk("embossingEnabled", false);
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+// ===== ОБЛОЖКА =====
+function setOblozhkaFormat(fmt) {
+  oblozhkaFormat = fmt;
+  document.getElementById("ob_f_a5").classList.toggle("active", fmt === "A5");
+  document.getElementById("ob_f_a4").classList.toggle("active", fmt === "A4");
+  document.getElementById("ob_f_a3").classList.toggle("active", fmt === "A3");
+}
+function setOblozhkaDensity(d) {
+  oblozhkaDensity = d;
+  document.getElementById("ob_d_200").classList.toggle("active", d === 200);
+  document.getElementById("ob_d_250").classList.toggle("active", d === 250);
+  document.getElementById("ob_d_300").classList.toggle("active", d === 300);
+}
+function setOblozhkaColor(val) {
+  oblozhkaColor = val;
+  document.getElementById("ob_c40").classList.toggle("active", val === "4+0");
+  document.getElementById("ob_c44").classList.toggle("active", val === "4+4");
+}
+function setOblozhkaLam(val) {
+  oblozhkaLam = val;
+  document.getElementById("ob_lam0").classList.toggle("active", val === "нет");
+  document.getElementById("ob_lam10").classList.toggle("active", val === "1+0");
+  document.getElementById("ob_lam11").classList.toggle("active", val === "1+1");
+}
+function goOblozhka(qty) {
+  const lamLabel = oblozhkaLam === "нет" ? "" : ", лам " + oblozhkaLam;
+  currentProductName = "Обложка " + oblozhkaFormat + ", " + oblozhkaDensity + "г" + lamLabel;
+  currentUserQty = qty;
+  const fmtDims = { A5: { w: 148, h: 210 }, A4: { w: 210, h: 297 }, A3: { w: 297, h: 420 } };
+  const dims = fmtDims[oblozhkaFormat] || fmtDims.A4;
+  document.getElementById("width").value = dims.w;
+  document.getElementById("height").value = dims.h;
+  document.getElementById("quantity").value = qty;
+  setSides(oblozhkaColor === "4+4" ? 2 : 1);
+  document.getElementById("paperType").value = "matt";
+  updatePaperOptions();
+  setTimeout(() => {
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === oblozhkaDensity) btn.click();
+    });
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    setChk("cuttingEnabled", true);
+    setChk("foldingEnabled", false);
+    setChk("diecutEnabled", false);
+    // Ламинация
+    if (oblozhkaLam !== "нет") {
+      setChk("laminationEnabled", true);
+      setLaminationSides(oblozhkaLam);
+      setLaminationType("gloss");
+      setVal("laminationCost", 12);
+      setVal("setupLamination", 300);
+    } else {
+      setChk("laminationEnabled", false);
+    }
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+function showLanding() {
+  document.getElementById("landingPage").classList.remove("hidden");
+  document.getElementById("mainApp").classList.remove("visible");
+  // Close all submenus
+  document.querySelectorAll(".product-submenu").forEach(s => s.classList.remove("open"));
+  document.querySelectorAll(".product-card").forEach(c => c.classList.remove("active"));
+  activeProduct = null;
+  // Reset calculator to defaults
+  resetCalculator();
+}
+
+function resetCalculator() {
+  currentProductName = "";
+  currentUserQty = 0;
+  // Basic
+  document.getElementById("width").value = 90;
+  document.getElementById("height").value = 50;
+  document.getElementById("quantity").value = 1000;
+  document.getElementById("quantityMultiplier").value = 1;
+  document.getElementById("markupPercent").value = 20;
+  setSides(1);
+  // Paper
+  document.getElementById("paperType").value = "matt";
+  updatePaperOptions();
+  setTimeout(() => {
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === 300) btn.click();
+    });
+  }, 30);
+  // Format buttons
+  document.querySelectorAll("#formatGrid .quick-btn").forEach(btn => btn.classList.remove("active"));
+  // Uncheck all postpress
+  const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+  setChk("cuttingEnabled", true);  // резка ON по умолчанию
+  setChk("laminationEnabled", false);
+  setChk("scoreEnabled", false);
+  setChk("foldingEnabled", false);
+  setChk("diecutEnabled", false);
+  setChk("uvLacquerEnabled", false);
+  setChk("embossingEnabled", false);
+  setChk("assemblyEnabled", false);
+  // Reset lamination
+  setLaminationType("gloss");
+  setLaminationSides("1+0");
+  // Reset print settings to defaults
+  document.getElementById("setupPrintOffsetA2").value = 10000;
+  onInputChange();
+}
+
+function skipLanding() {
+  document.getElementById("landingPage").classList.add("hidden");
+  document.getElementById("mainApp").classList.add("visible");
+}
+
+// Check if we should skip landing (if user was already on calculator)
+window.addEventListener("load", () => {
+  renderTemplatesBar();
+  // Check URL hash
+  if (window.location.hash === "#calc") {
+    skipLanding();
+  }
+});
 </script>
+
+</div><!-- /.main-app -->
 
 </body>
 </html>
