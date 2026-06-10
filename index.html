@@ -172,6 +172,38 @@
       background: #f8fafc;
       border-radius: var(--radius);
     }
+    .landing-request {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .landing-request label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .landing-request textarea {
+      width: 100%;
+      min-height: 60px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      resize: vertical;
+      background: #fff;
+    }
+    .landing-request textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
     .landing-footer {
       text-align: center;
       margin-top: 32px;
@@ -850,6 +882,15 @@
       cursor: pointer;
     }
     .saved-table .actions button:hover { background: var(--bg); }
+    .sum-chk {
+      width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #fff; transition: all 0.15s; flex-shrink: 0;
+      background: #fff; user-select: none;
+    }
+    .sum-chk:hover { border-color: var(--primary); }
+    .sum-chk.selected { background: var(--success); border-color: var(--success); }
+    .sum-chk.selected::after { content: "\\2713"; }
 
     .constants-grid {
       display: grid;
@@ -950,6 +991,10 @@
     <div class="landing-header">
       <h1>&#128208; Калькулятор себестоимости</h1>
       <p>Выберите изделие и настройте параметры</p>
+    </div>
+    <div class="landing-request">
+      <label>&#128221; Запрос клиента</label>
+      <textarea id="landingClientRequest" placeholder="Например: 1000 визиток 90x50, мелованка 300, 4+4..."></textarea>
     </div>
     <div class="landing-grid" id="landingGrid">
       <div class="product-card" id="card_papki" onclick="toggleSubmenu('papki')">&#128448; Папки</div>
@@ -1497,7 +1542,7 @@
                 <tr><th>Формат</th><th>На лист</th><th>Нужно листов</th></tr>
               </thead>
               <tbody id="sheetCalcTableBody">
-                <tr><td colspan="3" class="text-muted">\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0440\u0430\u0437\u043C\u0435\u0440 \u0438 \u0442\u0438\u0440\u0430\u0436</td></tr>
+                <tr><td colspan="3" class="text-muted">Введите размер и тираж</td></tr>
               </tbody>
             </table>
           </div>
@@ -1543,13 +1588,18 @@
     <div class="panel">
       <div class="panel-header">
         <span>&#128190; Сохраненные расчеты</span>
-        <button class="btn btn-sm" onclick="clearSaved()" style="padding:2px 6px; font-size:10px;">Очистить</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button class="btn btn-sm" onclick="calcSelectedSum()" style="padding:2px 8px; font-size:10px; background:var(--success); color:#fff; border-color:var(--success);" title="Сумма выбранных">∑ Сумма</button>
+          <button class="btn btn-sm" onclick="clearSumSelection()" style="padding:2px 6px; font-size:10px;" title="Сбросить выделение">□</button>
+          <button class="btn btn-sm" onclick="clearSaved()" style="padding:2px 6px; font-size:10px;">Очистить</button>
+        </div>
       </div>
       <div class="panel-body" style="padding:0;">
         <div class="results-wrapper">
           <table class="saved-table">
             <thead>
               <tr>
+                <th style="width:28px;" title="Выбрать для суммы"></th>
                 <th>Продукт</th>
                 <th>Себест.</th>
                 <th>Цена</th>
@@ -1558,7 +1608,7 @@
               </tr>
             </thead>
             <tbody id="savedTableBody">
-              <tr><td colspan="5" class="text-muted" style="text-align:center;">Нет сохраненных расчетов</td></tr>
+              <tr><td colspan="6" class="text-muted" style="text-align:center;">Нет сохраненных расчетов</td></tr>
             </tbody>
           </table>
         </div>
@@ -2280,6 +2330,7 @@ function renderSavedList() {
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
+      <td><div class="sum-chk" id="sum-chk-${index}" data-index="${index}" onclick="toggleSumSelection(${index})" title="\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0434\u043B\u044F \u0441\u0443\u043C\u043C\u044B"></div></td>
       <td><div style="font-weight:600; font-size:13px;">${desc}</div></td>
       <td class="cost-cell">${cost.toFixed(0)} \u20BD</td>
       <td class="price-cell">${priceWithMarkup.toFixed(0)} \u20BD${hasOverride ? '<span style="font-size:10px; color:var(--warning);"> (\u0440\u0443\u0447\u043D\u0430\u044F)</span>' : ''}</td>
@@ -2961,37 +3012,77 @@ function clearPriceBasket() {
 function copyToClipboard() {
   if (savedResults.length === 0) { alert("Нет данных для копирования"); return; }
   
-  const markupPercent = Number(document.getElementById("markupPercent").value || 20);
-  const markupFactor = (100 + markupPercent) / 100;
+  const markupFactor = (100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
   let text = "";
   
   savedResults.forEach(res => {
     const cost = res.cost;
-    const price = res.priceOverride !== null ? res.priceOverride : cost * markupFactor;
+    const hasOverride = res.priceOverride !== null;
+    const priceWithMarkup = hasOverride ? res.priceOverride : cost * markupFactor;
+    const pname = res.productName || res.productType || "";
+    
+    let paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.density}г`;
+    if (res.paperType === "designer" || res.paperType === "adhesive") {
+      paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.customPaperPrice}\u20BD/\u041B`;
+    }
+    
     const postpress = [];
-    if (res.cuttingEnabled) postpress.push("Резка");
+    if (res.cuttingEnabled) postpress.push("\u0420\u0435\u0437\u043A\u0430");
     if (res.laminationEnabled) {
-      const lamLabel = res.laminationType === "softtouch" ? "Софтач" : "Лам";
+      const lamLabel = res.laminationType === "softtouch" ? "\u0421\u043E\u0444\u0442\u0430\u0447" : "\u041B\u0430\u043C";
       postpress.push(lamLabel + " " + res.laminationSides);
     }
-    if (res.scoreEnabled) postpress.push("Биг");
-    if (res.foldingEnabled) postpress.push("Фальц");
-    if (res.diecutEnabled) postpress.push("Вырубка");
-    if (res.uvLacquerEnabled) postpress.push("УФ");
-    if (res.embossingEnabled) postpress.push("Тисн");
-    if (res.assemblyEnabled) postpress.push("Сбор");
+    if (res.scoreEnabled) postpress.push("\u0411\u0438\u0433");
+    if (res.foldingEnabled) postpress.push("\u0424\u0430\u043B\u044C\u0446");
+    if (res.diecutEnabled) postpress.push("\u0412\u044B\u0440\u0443\u0431\u043A\u0430");
+    if (res.uvLacquerEnabled) postpress.push("\u0423\u0424");
+    if (res.embossingEnabled) postpress.push("\u0422\u0438\u0441\u043D");
+    if (res.assemblyEnabled) postpress.push("\u0421\u0431\u043E\u0440");
     
-    let paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.density} г/м\u00B2`;
-    if (res.paperType === "designer" || res.paperType === "adhesive") {
-      paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.customPaperPrice} \u20BD/лист`;
-    }
-    const title = res.productName ? `${res.productName}, ` : (res.productType ? `${res.productType}, ` : "");
-    const mult = res.multiplier > 1 ? ` \u00D7${res.multiplier}` : "";
+    const qty = res.userQty || res.quantity;
     
-    text += `${title}${res.productSize}${mult}, ${res.color}, ${paperInfo}${postpress.length ? ', ' + postpress.join(", ") : ''} \u2014 ${res.quantity} шт \u2192 ${price.toFixed(0)} \u20BD\n`;
+    text += `${pname}, ${res.color}, ${paperInfo}${postpress.length ? ', ' + postpress.join(', ') : ''} \u2014 ${qty} \u0448\u0442 \u2192 ${priceWithMarkup.toFixed(0)} \u20BD\n`;
   });
   
-  navigator.clipboard.writeText(text).then(() => alert("Скопировано в буфер обмена!")).catch(() => alert("Ошибка копирования"));
+  navigator.clipboard.writeText(text).then(() => alert("\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430!")).catch(() => alert("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"));
+}
+
+function toggleSumSelection(index) {
+  const el = document.getElementById("sum-chk-" + index);
+  if (el) el.classList.toggle("selected");
+}
+
+function calcSelectedSum() {
+  const markupFactor = (100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
+  let selectedCost = 0;
+  let selectedPrice = 0;
+  let count = 0;
+  
+  document.querySelectorAll(".sum-chk.selected").forEach(el => {
+    const idx = Number(el.dataset.index);
+    const res = savedResults[idx];
+    if (res) {
+      const price = res.priceOverride !== null ? res.priceOverride : res.cost * markupFactor;
+      selectedCost += res.cost;
+      selectedPrice += price;
+      count++;
+    }
+  });
+  
+  if (count === 0) { alert("\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043E \u043F\u043E\u0437\u0438\u0446\u0438\u0439"); return; }
+  
+  const profit = selectedPrice - selectedCost;
+  const lines = [
+    `\u0412\u044B\u0431\u0440\u0430\u043D\u043E \u043F\u043E\u0437\u0438\u0446\u0438\u0439: ${count}`,
+    `\u0421\u0435\u0431\u0435\u0441\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C: ${selectedCost.toFixed(0)} \u20BD`,
+    `\u0426\u0435\u043D\u0430 \u0441 \u043D\u0430\u0446\u0435\u043D\u043A\u043E\u0439: ${selectedPrice.toFixed(0)} \u20BD`,
+    `\u041F\u0440\u0438\u0431\u044B\u043B\u044C: ${profit.toFixed(0)} \u20BD`
+  ];
+  alert(lines.join("\n"));
+}
+
+function clearSumSelection() {
+  document.querySelectorAll(".sum-chk.selected").forEach(el => el.classList.remove("selected"));
 }
 
 // ========== TEMPLATES ==========
@@ -3582,6 +3673,10 @@ function goOblozhka(qty) {
 function showLanding() {
   document.getElementById("landingPage").classList.remove("hidden");
   document.getElementById("mainApp").classList.remove("visible");
+  // Sync request back to landing
+  const mainReq = document.getElementById("clientRequestInput");
+  const landReq = document.getElementById("landingClientRequest");
+  if (mainReq && landReq) landReq.value = mainReq.value;
   // Close all submenus
   document.querySelectorAll(".product-submenu").forEach(s => s.classList.remove("open"));
   document.querySelectorAll(".product-card").forEach(c => c.classList.remove("active"));
@@ -3631,6 +3726,10 @@ function resetCalculator() {
 function skipLanding() {
   document.getElementById("landingPage").classList.add("hidden");
   document.getElementById("mainApp").classList.add("visible");
+  // Sync request from landing to main
+  const landReq = document.getElementById("landingClientRequest");
+  const mainReq = document.getElementById("clientRequestInput");
+  if (landReq && mainReq) mainReq.value = landReq.value;
 }
 
 // Check if we should skip landing (if user was already on calculator)
