@@ -738,6 +738,7 @@
       overflow-x: auto;
       border-radius: var(--radius);
       border: 1px solid var(--border);
+      max-width: 100%;
     }
     .results-table {
       width: 100%;
@@ -827,6 +828,17 @@
     .results-transposed thead th:first-child {
       text-align: left;
       min-width: 70px;
+    }
+    .results-transposed {
+      table-layout: fixed;
+    }
+    .results-transposed th,
+    .results-transposed td {
+      width: 14.28%;
+    }
+    .results-transposed th:first-child,
+    .results-transposed td:first-child {
+      width: 100px;
     }
     .results-transposed .remember-cell {
       padding: 4px 2px !important;
@@ -982,6 +994,7 @@
     }
   </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -1004,6 +1017,10 @@
       <div class="product-card" id="card_broshyura" onclick="toggleSubmenu('broshyura')">&#128216; Брошюра</div>
       <div class="product-card" id="card_nakleyka" onclick="toggleSubmenu('nakleyka')">&#127991;&#65039; Наклейка</div>
       <div class="product-card" id="card_oblozhka" onclick="toggleSubmenu('oblozhka')">&#128240; Обложка</div>
+      <div class="product-card" id="card_kalendar_kvartal" onclick="toggleSubmenu('kalendar_kvartal')">&#128197; Календарь квартальный</div>
+      <div class="product-card" id="card_kalendar_domik" onclick="toggleSubmenu('kalendar_domik')">&#127968; Календарь-домик</div>
+      <div class="product-card" id="card_kalendar_perekid" onclick="toggleSubmenu('kalendar_perekid')">&#128260; Перекидной календарь</div>
+      <div class="product-card" id="card_uv_pechat" onclick="toggleSubmenu('uv_pechat')">&#9889; УФ-печать</div>
     </div>
 
     <!-- Submenus always in DOM, collapsed via max-height (no display:none) -->
@@ -1254,6 +1271,159 @@
             <button class="quick-btn" onclick="goOblozhka(1000)">1000</button>
             <button class="quick-btn" onclick="goOblozhka(3000)">3000</button>
             <button class="quick-btn" onclick="goOblozhka(5000)">5000</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Календарь квартальный -->
+      <div class="product-submenu" id="sub_kalendar_kvartal">
+        <div class="submenu-title">&#128197; Календарь квартальный — 3 блока, 4+0, пружина</div>
+        <div class="submenu-section">
+          <label>Формат</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="kv_f_a4" onclick="setKalendarKvartalFormat('A4')">A4</button>
+            <button class="quick-btn" id="kv_f_a3" onclick="setKalendarKvartalFormat('A3')">A3</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Бумага блоков</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="kv_p_off" onclick="setKalendarKvartalPaper('offset')">Офсет 80г</button>
+            <button class="quick-btn" id="kv_p_matt" onclick="setKalendarKvartalPaper('matt')">Мелованная 150г</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Подложка</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="kv_pad_300" onclick="setKalendarKvartalPad(300)">Картон 300г</button>
+            <button class="quick-btn" id="kv_pad_350" onclick="setKalendarKvartalPad(350)">Картон 350г</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="goKalendarKvartal(50)">50</button>
+            <button class="quick-btn" onclick="goKalendarKvartal(100)">100</button>
+            <button class="quick-btn" onclick="goKalendarKvartal(200)">200</button>
+            <button class="quick-btn" onclick="goKalendarKvartal(300)">300</button>
+            <button class="quick-btn" onclick="goKalendarKvartal(500)">500</button>
+            <button class="quick-btn" onclick="goKalendarKvartal(1000)">1000</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Календарь-домик -->
+      <div class="product-submenu" id="sub_kalendar_domik">
+        <div class="submenu-title">&#127968; Календарь-домик — 6 листов, подставка, 4+0</div>
+        <div class="submenu-section">
+          <label>Формат</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="kd_f_a5" onclick="setKalendarDomikFormat('A5')">A5</button>
+            <button class="quick-btn" id="kd_f_a4" onclick="setKalendarDomikFormat('A4')">A4</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Бумага</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="kd_p_off" onclick="setKalendarDomikPaper('offset')">Офсет 80г</button>
+            <button class="quick-btn" id="kd_p_matt" onclick="setKalendarDomikPaper('matt')">Мелованная 150г</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Подставка</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="kd_stand_300" onclick="setKalendarDomikStand(300)">Картон 300г</button>
+            <button class="quick-btn" id="kd_stand_350" onclick="setKalendarDomikStand(350)">Картон 350г</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="goKalendarDomik(50)">50</button>
+            <button class="quick-btn" onclick="goKalendarDomik(100)">100</button>
+            <button class="quick-btn" onclick="goKalendarDomik(200)">200</button>
+            <button class="quick-btn" onclick="goKalendarDomik(300)">300</button>
+            <button class="quick-btn" onclick="goKalendarDomik(500)">500</button>
+            <button class="quick-btn" onclick="goKalendarDomik(1000)">1000</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Перекидной календарь -->
+      <div class="product-submenu" id="sub_kalendar_perekid">
+        <div class="submenu-title">&#128260; Перекидной календарь — 12 листов, пружина, крючок</div>
+        <div class="submenu-section">
+          <label>Формат</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="kp_f_a4" onclick="setKalendarPerekidFormat('A4')">A4</button>
+            <button class="quick-btn" id="kp_f_a3" onclick="setKalendarPerekidFormat('A3')">A3</button>
+            <button class="quick-btn" id="kp_f_a2" onclick="setKalendarPerekidFormat('A2')">A2</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Бумага</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="kp_p_off" onclick="setKalendarPerekidPaper('offset')">Офсет 80г</button>
+            <button class="quick-btn" id="kp_p_matt" onclick="setKalendarPerekidPaper('matt')">Мелованная 150г</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Обложка</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="kp_cov_300" onclick="setKalendarPerekidCover(300)">Картон 300г</button>
+            <button class="quick-btn" id="kp_cov_350" onclick="setKalendarPerekidCover(350)">Картон 350г</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="goKalendarPerekid(50)">50</button>
+            <button class="quick-btn" onclick="goKalendarPerekid(100)">100</button>
+            <button class="quick-btn" onclick="goKalendarPerekid(200)">200</button>
+            <button class="quick-btn" onclick="goKalendarPerekid(300)">300</button>
+            <button class="quick-btn" onclick="goKalendarPerekid(500)">500</button>
+            <button class="quick-btn" onclick="goKalendarPerekid(1000)">1000</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- УФ-печать -->
+      <div class="product-submenu" id="sub_uv_pechat">
+        <div class="submenu-title">&#9889; УФ-печать — плоскопечатная, рулонная, на любых материалах</div>
+        <div class="submenu-section">
+          <label>Тип УФ-печати</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="uv_t_flat" onclick="setUvType('flat')">Плоскопечатная</button>
+            <button class="quick-btn" id="uv_t_roll" onclick="setUvType('roll')">Рулонная</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Материал</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="uv_m_pvc" onclick="setUvMaterial('pvc')">ПВХ 3-5мм</button>
+            <button class="quick-btn" id="uv_m_acryl" onclick="setUvMaterial('acryl')">Акрил</button>
+            <button class="quick-btn" id="uv_m_ak" onclick="setUvMaterial('ak')">Алюкобонд</button>
+            <button class="quick-btn" id="uv_m_glass" onclick="setUvMaterial('glass')">Стекло</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Формат</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn active" id="uv_f_a3" onclick="setUvFormat('A3')">A3</button>
+            <button class="quick-btn" id="uv_f_a2" onclick="setUvFormat('A2')">A2</button>
+            <button class="quick-btn" id="uv_f_a1" onclick="setUvFormat('A1')">A1</button>
+            <button class="quick-btn" id="uv_f_a0" onclick="setUvFormat('A0')">A0</button>
+          </div>
+        </div>
+        <div class="submenu-section">
+          <label>Тираж</label>
+          <div class="submenu-buttons">
+            <button class="quick-btn" onclick="goUvPechat(1)">1</button>
+            <button class="quick-btn" onclick="goUvPechat(5)">5</button>
+            <button class="quick-btn" onclick="goUvPechat(10)">10</button>
+            <button class="quick-btn" onclick="goUvPechat(20)">20</button>
+            <button class="quick-btn" onclick="goUvPechat(50)">50</button>
+            <button class="quick-btn" onclick="goUvPechat(100)">100</button>
           </div>
         </div>
       </div>
@@ -1979,7 +2149,7 @@ function updatePaperOptions() {
 
 function getPaperPriceByTypeAndDensity(paperType, density) {
   if (paperType === "offset") return 125;
-  if (paperType === "matt") return 135;
+  if (paperType === "matt") return density > 200 ? 155 : 135;
   if (paperType === "cardboard") return 140;
   return 0;
 }
@@ -3085,6 +3255,55 @@ function clearSumSelection() {
   document.querySelectorAll(".sum-chk.selected").forEach(el => el.classList.remove("selected"));
 }
 
+// ========== SAFE STORAGE ==========
+function isStorageSupported() {
+  try {
+    const testKey = '__polygraphy_test__';
+    localStorage.setItem(testKey, '1');
+    const readback = localStorage.getItem(testKey);
+    localStorage.removeItem(testKey);
+    return readback === '1';
+  } catch (e) {
+    return false;
+  }
+}
+
+const storageAvailable = isStorageSupported();
+
+function safeStorageSet(key, value) {
+  if (!storageAvailable) {
+    console.warn('localStorage недоступен, шаблоны не сохранятся');
+    return false;
+  }
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    console.error('Ошибка сохранения в localStorage:', e);
+    alert('Не удалось сохранить шаблон. Возможно, хранилище переполнено.');
+    return false;
+  }
+}
+
+function safeStorageGet(key) {
+  if (!storageAvailable) return null;
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    return null;
+  }
+}
+
+function safeStorageRemove(key) {
+  if (!storageAvailable) return false;
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 // ========== TEMPLATES ==========
 const TEMPLATES_KEY = "polygraphy_templates_v1";
 
@@ -3099,12 +3318,12 @@ function closeTemplateSaveModal() {
 }
 
 function getTemplates() {
-  try { return JSON.parse(localStorage.getItem(TEMPLATES_KEY)) || {}; }
+  try { return JSON.parse(safeStorageGet(TEMPLATES_KEY)) || {}; }
   catch(e) { return {}; }
 }
 
 function setTemplates(tmpl) {
-  localStorage.setItem(TEMPLATES_KEY, JSON.stringify(tmpl));
+  safeStorageSet(TEMPLATES_KEY, JSON.stringify(tmpl));
 }
 
 function confirmSaveTemplate() {
@@ -3462,8 +3681,8 @@ function goBloknot(qty) {
     setChk("diecutEnabled", false);
     setChk("uvLacquerEnabled", false);
     setChk("embossingEnabled", false);
-    // Приладка офсета
-    document.getElementById("setupPrintOffsetA2").value = 5000;
+    // Приладка офсета для блокнота (как в справочнике)
+    document.getElementById("setupPrintOffsetA2").value = 10000;
     onInputChange();
   }, 50);
   skipLanding();
@@ -3533,8 +3752,70 @@ function goBroshyura() {
   const polos = broshyuraPolos;
   const qty = broshyuraQty;
   currentProductName = "Брошюра " + broshyuraFormat + ", " + polos + " полос";
-  currentUserQty = qty;  // исходный тираж для отображения
-  // 4+4, 150г, 420×597
+  currentUserQty = qty;
+
+  // === СПЕЦИАЛЬНЫЙ РАСЧЁТ ДЛЯ БРОШЮР А4 ===
+  // Формула: (полос/4) * (((стоимость 4+4) + стоимость бумаги) * тираж + 3)
+  if (broshyuraFormat === "A4") {
+    // Размер А4 для брошюры: 210×297 (полоса А4)
+    document.getElementById("width").value = 210;
+    document.getElementById("height").value = 297;
+    document.getElementById("quantity").value = qty;
+    setSides(2); // 4+4
+    document.getElementById("paperType").value = "matt";
+    updatePaperOptions();
+    setTimeout(() => {
+      document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+        if (parseInt(btn.textContent) === 150) btn.click();
+      });
+
+      // Расчёт по формуле пользователя:
+      // (полос/4) * (((стоимость 4+4) + стоимость бумаги) * тираж + 3)
+      const pagesPerSheet = 4; // 4 полосы на лист А2 (2 на лицо, 2 на оборот)
+      const sheetsPerBrochure = polos / pagesPerSheet; // сколько листов А2 нужно
+
+      // Получаем текущие цены печати и бумаги
+      const printCost4x4 = Number(document.getElementById("printCostOffsetA2").value) * 2; // 4+4 = 2 прохода
+      const paperPricePerKg = Number(document.getElementById("paperPricePerKg").value);
+      const density = 150;
+      // Площадь листа А2 = 0.42 * 0.594 = 0.24948 м²
+      const areaA2 = 0.42 * 0.594;
+      const weightA2 = areaA2 * (density / 1000); // вес листа А2 в кг
+      const paperCostPerSheet = weightA2 * paperPricePerKg;
+
+      // Формула: (полос/4) * (((стоимость 4+4) + стоимость бумаги) * тираж + 3)
+      // Где +3 = приладка на лист (3 листа приладки для цифры)
+      const costPerSheet = printCost4x4 + paperCostPerSheet;
+      const totalCost = sheetsPerBrochure * (costPerSheet * qty + 3);
+
+      // Устанавливаем множитель для отображения
+      document.getElementById("quantityMultiplier").value = sheetsPerBrochure;
+
+      const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+      setChk("cuttingEnabled", true);
+      setChk("foldingEnabled", false);
+      setChk("assemblyEnabled", true); // Брошюровка
+      setVal("assemblyCostSetting", 5);
+      setVal("setupAssembly", 300);
+
+      // Приладка офсета для брошюры А4
+      document.getElementById("setupPrintOffsetA2").value = 14000;
+
+      onInputChange();
+
+      // Показываем информацию о расчёте в консоль
+      console.log(`Брошюра А4: ${polos} полос, ${qty} шт.`);
+      console.log(`Листов А2 на брошюру: ${sheetsPerBrochure}`);
+      console.log(`Стоимость печати 4+4: ${printCost4x4} руб/лист`);
+      console.log(`Стоимость бумаги: ${paperCostPerSheet.toFixed(2)} руб/лист`);
+      console.log(`Итого по формуле: ${Math.round(totalCost / 10) * 10} руб`);
+    }, 50);
+    skipLanding();
+    return;
+  }
+
+  // === СТАНДАРТНЫЙ РАСЧЁТ ДЛЯ А5 И ДРУГИХ ФОРМАТОВ ===
   document.getElementById("width").value = 420;
   document.getElementById("height").value = 597;
   document.getElementById("quantity").value = qty;
@@ -3545,24 +3826,12 @@ function goBroshyura() {
     document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
       if (parseInt(btn.textContent) === 150) btn.click();
     });
-    // Множитель
-    let multiplier;
-    if (broshyuraFormat === "A4") {
-      multiplier = polos / 8;
-    } else {
-      multiplier = polos / 16;
-    }
-    // Для формата Z множитель удваивается — Z это цифра SRA3
-    // Z всегда участвует в расчёте, просто множитель ×2
-    // Но пользователь говорит "для формата Z множитель удваивается"
-    // Это значит что если выбран формат Z (SRA3) в результатах — множитель ×2
-    // В целом просто ставим множитель
+    // Множитель = полос/16 для A5
+    let multiplier = polos / 16;
     document.getElementById("quantityMultiplier").value = multiplier;
     const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
     setChk("cuttingEnabled", true);
-    // Брошюра: без фальцовки
     setChk("foldingEnabled", false);
-    // Приладка офсета для брошюры: 14000
     document.getElementById("setupPrintOffsetA2").value = 14000;
     onInputChange();
   }, 50);
@@ -3634,6 +3903,219 @@ function setOblozhkaLam(val) {
   document.getElementById("ob_lam10").classList.toggle("active", val === "1+0");
   document.getElementById("ob_lam11").classList.toggle("active", val === "1+1");
 }
+// ===== КАЛЕНДАРЬ КВАРТАЛЬНЫЙ =====
+function setKalendarKvartalFormat(fmt) {
+  kalendarKvartalFormat = fmt;
+  document.getElementById("kv_f_a4").classList.toggle("active", fmt === 'A4');
+  document.getElementById("kv_f_a3").classList.toggle("active", fmt === 'A3');
+}
+function setKalendarKvartalPaper(paper) {
+  kalendarKvartalPaper = paper;
+  document.getElementById("kv_p_off").classList.toggle("active", paper === 'offset');
+  document.getElementById("kv_p_matt").classList.toggle("active", paper === 'matt');
+}
+function setKalendarKvartalPad(pad) {
+  kalendarKvartalPad = pad;
+  document.getElementById("kv_pad_300").classList.toggle("active", pad === 300);
+  document.getElementById("kv_pad_350").classList.toggle("active", pad === 350);
+}
+function goKalendarKvartal(qty) {
+  const fmtDims = { A4: { w: 210, h: 297 }, A3: { w: 297, h: 420 } };
+  const dims = fmtDims[kalendarKvartalFormat] || fmtDims.A4;
+  currentProductName = "Календарь квартальный " + kalendarKvartalFormat + ", 3 блока";
+  currentUserQty = qty;
+  const finalQty = qty * 3;
+  document.getElementById("width").value = dims.w;
+  document.getElementById("height").value = dims.h;
+  document.getElementById("quantity").value = finalQty;
+  setSides(1);
+  document.getElementById("paperType").value = kalendarKvartalPaper;
+  updatePaperOptions();
+  setTimeout(() => {
+    const density = kalendarKvartalPaper === 'offset' ? 80 : 150;
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === density) btn.click();
+    });
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    setChk("cuttingEnabled", true);
+    setChk("foldingEnabled", false);
+    setChk("assemblyEnabled", true);
+    setVal("assemblyCostSetting", 15);
+    setVal("setupAssembly", 500);
+    setChk("scoreEnabled", true);
+    setVal("scoreCost", 2);
+    setVal("setupScore", 300);
+    setVal("scoreCountInput", 2);
+    document.getElementById("setupPrintOffsetA2").value = 8000;
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+// ===== КАЛЕНДАРЬ-ДОМИК =====
+function setKalendarDomikFormat(fmt) {
+  kalendarDomikFormat = fmt;
+  document.getElementById("kd_f_a5").classList.toggle("active", fmt === 'A5');
+  document.getElementById("kd_f_a4").classList.toggle("active", fmt === 'A4');
+}
+function setKalendarDomikPaper(paper) {
+  kalendarDomikPaper = paper;
+  document.getElementById("kd_p_off").classList.toggle("active", paper === 'offset');
+  document.getElementById("kd_p_matt").classList.toggle("active", paper === 'matt');
+}
+function setKalendarDomikStand(stand) {
+  kalendarDomikStand = stand;
+  document.getElementById("kd_stand_300").classList.toggle("active", stand === 300);
+  document.getElementById("kd_stand_350").classList.toggle("active", stand === 350);
+}
+function goKalendarDomik(qty) {
+  const fmtDims = { A5: { w: 148, h: 210 }, A4: { w: 210, h: 297 } };
+  const dims = fmtDims[kalendarDomikFormat] || fmtDims.A5;
+  currentProductName = "Календарь-домик " + kalendarDomikFormat + ", 6 листов";
+  currentUserQty = qty;
+  const finalQty = qty * 6;
+  document.getElementById("width").value = dims.w;
+  document.getElementById("height").value = dims.h;
+  document.getElementById("quantity").value = finalQty;
+  setSides(1);
+  document.getElementById("paperType").value = kalendarDomikPaper;
+  updatePaperOptions();
+  setTimeout(() => {
+    const density = kalendarDomikPaper === 'offset' ? 80 : 150;
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === density) btn.click();
+    });
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    setChk("cuttingEnabled", true);
+    setChk("foldingEnabled", true);
+    setVal("foldingCostSetting", 2);
+    setVal("setupFolding", 300);
+    setChk("assemblyEnabled", true);
+    setVal("assemblyCostSetting", 10);
+    setVal("setupAssembly", 300);
+    setChk("scoreEnabled", true);
+    setVal("scoreCost", 2);
+    setVal("setupScore", 300);
+    setVal("scoreCountInput", 2);
+    document.getElementById("setupPrintOffsetA2").value = 8000;
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+// ===== ПЕРЕКИДНОЙ КАЛЕНДАРЬ =====
+function setKalendarPerekidFormat(fmt) {
+  kalendarPerekidFormat = fmt;
+  document.getElementById("kp_f_a4").classList.toggle("active", fmt === 'A4');
+  document.getElementById("kp_f_a3").classList.toggle("active", fmt === 'A3');
+  document.getElementById("kp_f_a2").classList.toggle("active", fmt === 'A2');
+}
+function setKalendarPerekidPaper(paper) {
+  kalendarPerekidPaper = paper;
+  document.getElementById("kp_p_off").classList.toggle("active", paper === 'offset');
+  document.getElementById("kp_p_matt").classList.toggle("active", paper === 'matt');
+}
+function setKalendarPerekidCover(cover) {
+  kalendarPerekidCover = cover;
+  document.getElementById("kp_cov_300").classList.toggle("active", cover === 300);
+  document.getElementById("kp_cov_350").classList.toggle("active", cover === 350);
+}
+function goKalendarPerekid(qty) {
+  const fmtDims = { A4: { w: 210, h: 297 }, A3: { w: 297, h: 420 }, A2: { w: 420, h: 594 } };
+  const dims = fmtDims[kalendarPerekidFormat] || fmtDims.A4;
+  currentProductName = "Перекидной календарь " + kalendarPerekidFormat + ", 12 листов";
+  currentUserQty = qty;
+  const finalQty = qty * 12;
+  document.getElementById("width").value = dims.w;
+  document.getElementById("height").value = dims.h;
+  document.getElementById("quantity").value = finalQty;
+  setSides(1);
+  document.getElementById("paperType").value = kalendarPerekidPaper;
+  updatePaperOptions();
+  setTimeout(() => {
+    const density = kalendarPerekidPaper === 'offset' ? 80 : 150;
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (parseInt(btn.textContent) === density) btn.click();
+    });
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    setChk("cuttingEnabled", true);
+    setChk("foldingEnabled", true);
+    setVal("foldingCostSetting", 1);
+    setVal("setupFolding", 300);
+    setChk("assemblyEnabled", true);
+    setVal("assemblyCostSetting", 20);
+    setVal("setupAssembly", 500);
+    setChk("diecutEnabled", true);
+    setVal("diecutCostSetting", 3);
+    setVal("setupDiecut", 1000);
+    setVal("diecutStampCostSetting", 0);
+    setVal("diecutPerStamp", 1);
+    document.getElementById("setupPrintOffsetA2").value = 10000;
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+// ===== УФ-ПЕЧАТЬ =====
+function setUvType(type) {
+  uvType = type;
+  document.getElementById("uv_t_flat").classList.toggle("active", type === 'flat');
+  document.getElementById("uv_t_roll").classList.toggle("active", type === 'roll');
+}
+function setUvMaterial(mat) {
+  uvMaterial = mat;
+  document.getElementById("uv_m_pvc").classList.toggle("active", mat === 'pvc');
+  document.getElementById("uv_m_acryl").classList.toggle("active", mat === 'acryl');
+  document.getElementById("uv_m_ak").classList.toggle("active", mat === 'ak');
+  document.getElementById("uv_m_glass").classList.toggle("active", mat === 'glass');
+}
+function setUvFormat(fmt) {
+  uvFormat = fmt;
+  document.getElementById("uv_f_a3").classList.toggle("active", fmt === 'A3');
+  document.getElementById("uv_f_a2").classList.toggle("active", fmt === 'A2');
+  document.getElementById("uv_f_a1").classList.toggle("active", fmt === 'A1');
+  document.getElementById("uv_f_a0").classList.toggle("active", fmt === 'A0');
+}
+function goUvPechat(qty) {
+  const fmtDims = { A3: { w: 297, h: 420 }, A2: { w: 420, h: 594 }, A1: { w: 594, h: 841 }, A0: { w: 841, h: 1189 } };
+  const dims = fmtDims[uvFormat] || fmtDims.A3;
+  const matLabels = { pvc: 'ПВХ', acryl: 'Акрил', ak: 'Алюкобонд', glass: 'Стекло' };
+  currentProductName = "УФ-печать " + matLabels[uvMaterial] + " " + uvFormat;
+  currentUserQty = qty;
+  document.getElementById("width").value = dims.w;
+  document.getElementById("height").value = dims.h;
+  document.getElementById("quantity").value = qty;
+  setSides(1);
+  document.getElementById("paperType").value = "designer";
+  updatePaperOptions();
+  setTimeout(() => {
+    const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    const uvPrices = { pvc: { flat: 3500, roll: 2800 }, acryl: { flat: 4500, roll: 3800 }, ak: { flat: 3200, roll: 2600 }, glass: { flat: 5000, roll: 4200 } };
+    const pricePerM2 = uvPrices[uvMaterial][uvType];
+    const area = (dims.w * dims.h) / 1000000;
+    const materialCost = pricePerM2 * area * qty;
+    const printCost = 800 * area * qty + 2000;
+    document.getElementById("customPaperPrice").value = Math.round((materialCost + printCost) / qty);
+    setChk("cuttingEnabled", false);
+    setChk("laminationEnabled", false);
+    setChk("scoreEnabled", false);
+    setChk("foldingEnabled", false);
+    setChk("diecutEnabled", false);
+    setChk("uvLacquerEnabled", false);
+    setChk("embossingEnabled", false);
+    setChk("assemblyEnabled", false);
+    document.getElementById("printCostZ").value = 0;
+    document.getElementById("setupPrintZ").value = 0;
+    onInputChange();
+  }, 50);
+  skipLanding();
+}
+
+
 function goOblozhka(qty) {
   const lamLabel = oblozhkaLam === "нет" ? "" : ", лам " + oblozhkaLam;
   currentProductName = "Обложка " + oblozhkaFormat + ", " + oblozhkaDensity + "г" + lamLabel;
@@ -3734,8 +4216,7 @@ function skipLanding() {
 
 // Check if we should skip landing (if user was already on calculator)
 window.addEventListener("load", () => {
-  renderTemplatesBar();
-  // Check URL hash
+  // Check URL hash for direct calculator access
   if (window.location.hash === "#calc") {
     skipLanding();
   }
