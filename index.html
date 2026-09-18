@@ -1,0 +1,2903 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Калькулятор себестоимости — Полиграфия</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #16a34a;
+      --warning: #ea580c;
+      --danger: #dc2626;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --border: #d1d5db;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+      --radius: 6px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    .main-app {
+      opacity: 0;
+      transition: opacity 0.35s ease 0.1s;
+    }
+    .main-app.visible {
+      opacity: 1;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding: 0;
+      font-size: 13px;
+    }
+    .app-header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow);
+    }
+    .app-header h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .app-header .badge {
+      background: var(--primary);
+      color: white;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .header-actions { display: flex; gap: 6px; }
+
+    .btn {
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--card);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.12s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn:hover { background: var(--bg); border-color: var(--text-muted); }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+    .btn-sm { padding: 5px 10px; font-size: 11px; }
+    .btn-icon { padding: 6px; }
+
+    /* ========== 3-COLUMN LAYOUT ========== */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 1280px) {
+      .container { grid-template-columns: 1fr 1fr 1fr; gap: 12px; padding: 12px; }
+    }
+    @media (max-width: 1024px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .col { display: flex; flex-direction: column; gap: 12px; }
+
+    .panel {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+    }
+    .panel-body { padding: 14px; }
+
+    /* ========== COLUMN 1: PARAMETERS ========== */
+    .param-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .form-group { }
+    .form-group label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      transition: all 0.12s;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .quick-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-top: 3px;
+    }
+    .quick-btn {
+      padding: 5px 4px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: var(--radius);
+      font-size: 11px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.12s;
+    }
+    .quick-btn:hover { background: #f1f5f9; border-color: var(--text-muted); }
+    .quick-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .sides-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .toggle-btn {
+      padding: 8px 6px;
+      border: 2px solid var(--border);
+      background: var(--card);
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+      font-size: 12px;
+      transition: all 0.12s;
+    }
+    .toggle-btn.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #eff6ff;
+    }
+
+    .multiplier-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .multiplier-box button {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .multiplier-box input {
+      width: 50px;
+      text-align: center;
+      padding: 5px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .tag-hint {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .paper-display {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      padding: 4px 6px;
+      background: #f8fafc;
+      border-radius: var(--radius);
+    }
+
+    /* ========== TEMPLATES ========== */
+    .templates-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .template-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+      color: var(--text);
+      box-shadow: var(--shadow);
+    }
+    .template-chip:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .template-chip .tmpl-del {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(220,38,38,0.1);
+      color: var(--danger);
+      font-size: 11px;
+      margin-left: 2px;
+      border: none;
+      cursor: pointer;
+      line-height: 1;
+      font-weight: 700;
+    }
+    .template-chip:hover .tmpl-del {
+      background: rgba(220,38,38,0.2);
+    }
+    .template-empty {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 4px 0;
+    }
+
+    /* ========== PRICE LIST ========== */
+    .price-qty-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      text-align: center;
+      background: white;
+      transition: all 0.12s;
+    }
+    .price-qty-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+    .price-qty-card .qty-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .price-qty-card .price-btn {
+      width: 100%;
+      padding: 8px;
+      border: 2px solid var(--primary);
+      background: white;
+      color: var(--primary);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .price-qty-card .price-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+    .price-basket-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .price-basket-item:last-child { border-bottom: none; }
+    .price-basket-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+    }
+    .price-basket-item .basket-info {
+      flex: 1;
+      font-weight: 500;
+    }
+    .price-basket-item .basket-price {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 13px;
+    }
+    .price-basket-item .basket-delete {
+      padding: 2px 6px;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 3px;
+      cursor: pointer;
+      color: var(--danger);
+    }
+    .price-basket-item.merged {
+      background: #eff6ff;
+      border-left: 3px solid var(--primary);
+    }
+
+    /* ========== LAMINATION TYPE ========== */
+    .lam-type-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .lam-color-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    /* ========== COLUMN 2: TOOLS ========== */
+    .request-box textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      resize: vertical;
+      min-height: 50px;
+      font-family: inherit;
+    }
+    .request-box textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
+    .request-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .parsed-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    .tag {
+      padding: 5px 10px;
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.12s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+    .tag:hover { background: #dbeafe; border-color: var(--primary); }
+    .tag.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .tag b {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      background: rgba(37, 99, 235, 0.15);
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .tag.active b { background: rgba(255,255,255,0.25); color: white; }
+
+    /* Format presets grid */
+    .format-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .format-grid .quick-btn {
+      font-size: 10px;
+      padding: 5px 2px;
+      font-weight: 600;
+    }
+    .format-grid .quick-btn .fmt-dim {
+      display: block;
+      font-size: 9px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+    .format-grid .quick-btn:hover .fmt-dim { color: white; }
+
+    /* Accordion */
+    .accordion-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 6px;
+      overflow: hidden;
+    }
+    .accordion-header {
+      padding: 8px 12px;
+      background: #f8fafc;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 12px;
+      user-select: none;
+    }
+    .accordion-header:hover { background: #f1f5f9; }
+    .accordion-icon { transition: transform 0.2s; font-size: 10px; }
+    .accordion-item.open .accordion-icon { transform: rotate(180deg); }
+    .accordion-body {
+      display: none;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .accordion-item.open .accordion-body { display: block; }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+    .option-row input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--primary);
+    }
+    .sub-options {
+      margin-left: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .sub-options .form-group { margin-bottom: 0; }
+    .sub-options .form-group.full { grid-column: 1 / -1; }
+
+    .print-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .brochure-calc {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      align-items: end;
+    }
+    .brochure-formats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    /* ========== COLUMN 3: OUTPUT ========== */
+    .results-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      max-width: 100%;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .results-table thead th {
+      background: #f8fafc;
+      padding: 8px 6px;
+      border-bottom: 2px solid var(--border);
+      font-weight: 600;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .results-table tbody td {
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .results-table tbody tr:hover { background: #f8fafc; }
+    .results-table tbody tr.best-format { background: #f0fdf4; }
+    .results-table tbody tr.best-format td { color: var(--success); font-weight: 600; }
+    .results-table .format-cell {
+      text-align: left;
+      font-weight: 600;
+    }
+    .results-table .total-cell {
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .results-table .dash { color: var(--text-muted); opacity: 0.5; }
+
+    /* Transposed results table */
+    .results-transposed tbody td {
+      text-align: center;
+      padding: 7px 6px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .results-transposed tbody td:first-child {
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-size: 11px;
+      background: #f8fafc;
+      white-space: nowrap;
+    }
+    .results-transposed tbody tr:last-child td {
+      font-weight: 700;
+      font-size: 13px;
+      background: #f0f9ff;
+      border-top: 2px solid var(--primary);
+    }
+    .results-transposed tbody tr:last-child td:first-child {
+      background: #e0f2fe;
+      color: var(--primary);
+    }
+    .results-transposed tbody td.best-col {
+      background: #f0fdf4;
+      color: var(--success);
+      font-weight: 600;
+    }
+    .results-transposed tbody tr:last-child td.best-col {
+      background: #dcfce7;
+      color: #15803d;
+      font-weight: 700;
+    }
+    .results-transposed thead th {
+      text-align: center;
+    }
+    .results-transposed thead th.best-col-header {
+      background: #dcfce7;
+      color: #15803d;
+      position: relative;
+    }
+    .results-transposed thead th.best-col-header::after {
+      content: "★";
+      font-size: 10px;
+      margin-left: 3px;
+    }
+    .results-transposed thead th:first-child {
+      text-align: left;
+      min-width: 70px;
+    }
+    .results-transposed {
+      table-layout: fixed;
+    }
+    .results-transposed th,
+    .results-transposed td {
+      width: 14.28%;
+    }
+    .results-transposed th:first-child,
+    .results-transposed td:first-child {
+      width: 100px;
+    }
+    .results-transposed .remember-cell {
+      padding: 4px 2px !important;
+      min-width: 60px;
+    }
+
+    .remember-btn {
+      padding: 2px 6px;
+      font-size: 10px;
+      background: var(--success);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: 500;
+      margin-right: 4px;
+    }
+    .remember-btn:hover { background: #15803d; }
+
+    .saved-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .saved-table th {
+      background: #f8fafc;
+      padding: 8px 6px;
+      border-bottom: 2px solid var(--border);
+      font-weight: 600;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: left;
+    }
+    .saved-table td {
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .saved-table tr:hover { background: #f8fafc; }
+    .saved-table .price-cell { font-weight: 600; color: var(--primary); }
+    .saved-table .profit-cell { font-weight: 600; color: var(--success); }
+    .saved-table .cost-cell { font-weight: 500; }
+    .saved-table .actions {
+      display: flex;
+      gap: 3px;
+    }
+    .saved-table .actions button {
+      padding: 2px 5px;
+      font-size: 10px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .saved-table .actions button:hover { background: var(--bg); }
+    .sum-chk {
+      width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #fff; transition: all 0.15s; flex-shrink: 0;
+      background: #fff; user-select: none;
+    }
+    .sum-chk:hover { border-color: var(--primary); }
+    .sum-chk.selected { background: var(--success); border-color: var(--success); }
+    .sum-chk.selected::after { content: "\\2713"; }
+
+    .constants-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      font-size: 12px;
+    }
+    .constants-grid h4 {
+      font-size: 11px;
+      margin-bottom: 6px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .constants-grid ul {
+      list-style: none;
+      line-height: 1.7;
+    }
+
+    .results-summary {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-size: 15px; }
+    .modal-body {
+      padding: 18px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    /* Utilities */
+    .text-muted { color: var(--text-muted); }
+    .text-sm { font-size: 11px; }
+    .mb-2 { margin-bottom: 6px; }
+    .mb-3 { margin-bottom: 10px; }
+    .mt-2 { margin-top: 6px; }
+    .mt-3 { margin-top: 10px; }
+    .w-full { width: 100%; }
+    .flex { display: flex; }
+    .gap-2 { gap: 6px; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+
+    @media (max-width: 768px) {
+      .app-header { padding: 10px 14px; }
+      .app-header h1 { font-size: 14px; }
+      .container { padding: 10px; gap: 10px; }
+      .print-grid { grid-template-columns: 1fr; }
+      .sub-options { grid-template-columns: 1fr; }
+      .brochure-calc { grid-template-columns: 1fr; }
+      .constants-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+<base target="_blank">
+</head>
+<body>
+
+<!-- Main App -->
+<div class="main-app visible" id="mainApp">
+
+<div class="app-header">
+  <h1>&#128208; Калькулятор себестоимости <span class="badge">v3.0</span></h1>
+  <div class="header-actions">
+    <button class="btn btn-sm" onclick="openHintsModal()">&#10067; Подсказки</button>
+    <button class="btn btn-sm" onclick="openTemplateSaveModal()">&#128190; Сохранить шаблон</button>
+    <button class="btn btn-sm" onclick="copyToClipboard()">&#128203; Копировать</button>
+  </div>
+</div>
+
+<!-- Client Request (full width) -->
+<div class="panel request-box" style="max-width:1600px; margin:16px auto 0; width:calc(100% - 32px);">
+  <div class="panel-header">&#128221; Запрос клиента</div>
+  <div class="panel-body">
+    <textarea id="clientRequestInput" placeholder="Например: 1000 визиток 90x50, мелованка 300, 4+4..."></textarea>
+    <div class="request-actions">
+      <button class="btn btn-primary btn-sm w-full" onclick="parseRequest()">&#128269; Разобрать</button>
+      <button class="btn btn-sm" onclick="clearRequest()">Очистить</button>
+    </div>
+    <div id="parsedTags" class="parsed-tags"></div>
+    <div class="tag-hint">Нажмите на тег, чтобы применить значение</div>
+  </div>
+</div>
+
+<!-- Templates (full width, under client request) -->
+<div class="panel" id="templatesPanel" style="display:none; max-width:1600px; margin:12px auto 0; width:calc(100% - 32px);">
+  <div class="panel-header">&#128209; Шаблоны</div>
+  <div class="panel-body">
+    <div class="templates-bar" id="templatesBar">
+      <span class="template-empty">Нет сохранённых шаблонов</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ========== COLUMN 1: PARAMETERS ========== -->
+  <div class="col col-params">
+
+    <div class="panel">
+      <div class="panel-header">&#9881;&#65039; Параметры заказа</div>
+      <div class="panel-body">
+        <div class="param-grid">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ширина, мм</label>
+              <input type="number" id="width" value="90" oninput="onInputChange()">
+            </div>
+            <div class="form-group">
+              <label>Высота, мм</label>
+              <input type="number" id="height" value="50" oninput="onInputChange()">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Формат</label>
+            <div class="format-grid" id="formatGrid"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Тираж</label>
+            <input type="number" id="quantity" value="1000" oninput="onInputChange()">
+            <div class="quick-buttons" id="quantityButtons"></div>
+          </div>
+
+          <div class="form-group">
+            <label>Цветность</label>
+            <div class="sides-toggle">
+              <button class="toggle-btn active" id="btn_4_0" onclick="setSides(1)">4+0</button>
+              <button class="toggle-btn" id="btn_4_4" onclick="setSides(2)">4+4</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Тип бумаги</label>
+            <select id="paperType" onchange="updatePaperOptions(); onInputChange();">
+              <option value="offset">Офсетная</option>
+              <option value="matt" selected>Мелованная</option>
+              <option value="cardboard">Картон</option>
+              <option value="designer">Дизайнерская</option>
+              <option value="adhesive">Самоклейка</option>
+            </select>
+          </div>
+
+          <div id="customPaperPriceContainer" style="display:none;">
+            <div class="form-group">
+              <label>Стоимость за 1 лист, руб</label>
+              <input type="number" id="customPaperPrice" value="100" oninput="onInputChange()">
+              <div class="tag-hint">Для цифры — 1/4 листа, для офсета — 1/2 листа</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Плотность</label>
+            <div class="quick-buttons" id="paperOptions"></div>
+            <div id="display_paper" class="paper-display">Выбрано: Мелованная 300 г/м2</div>
+          </div>
+
+          <div class="form-group" id="paperPricePerKgGroup">
+            <label>Цена бумаги за кг, руб</label>
+            <input type="number" id="paperPricePerKg" value="155" oninput="onInputChange()">
+          </div>
+
+          <div class="form-group">
+            <label>Наценка, %</label>
+            <input type="number" id="markupPercent" value="20" oninput="onInputChange()">
+          </div>
+
+          <div class="form-group">
+            <label>Количество (множитель)</label>
+            <div class="multiplier-box">
+              <button onclick="changeMultiplier(-1)">&#8722;</button>
+              <input type="number" id="quantityMultiplier" value="1" min="1" oninput="onMultiplierChange()">
+              <button onclick="changeMultiplier(1)">+</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========== COLUMN 2: TOOLS ========== -->
+  <div class="col col-tools">
+
+    <!-- Print Settings -->
+    <div class="panel">
+      <div class="accordion-item" id="accordionPrint">
+        <div class="accordion-header" onclick="toggleAccordion('accordionPrint')">
+          <span>&#128424;&#65039; Настройка печати</span>
+          <span class="accordion-icon">&#9660;</span>
+        </div>
+        <div class="accordion-body">
+          <div class="print-grid">
+            <div class="form-group"><label>Цифра SRA3, руб/лист</label><input type="number" id="printCostZ" value="15"></div>
+            <div class="form-group"><label>Приладка SRA3</label><input type="number" id="setupPrintZ" value="300"></div>
+            <div class="form-group"><label>Цифра B2, руб/лист</label><input type="number" id="printCostE" value="50"></div>
+            <div class="form-group"><label>Приладка B2</label><input type="number" id="setupPrintE" value="500"></div>
+            <div class="form-group"><label>Офсет A2, руб/лист</label><input type="number" id="printCostOffsetA2" value="2"></div>
+            <div class="form-group"><label>Приладка A2</label><input type="number" id="setupPrintOffsetA2" value="10000"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post-press -->
+    <div class="panel">
+      <div class="accordion-item open" id="accordionPostpress">
+        <div class="accordion-header" onclick="toggleAccordion('accordionPostpress')">
+          <span>&#9986;&#65039; Послепечатные работы</span>
+          <span class="accordion-icon">&#9660;</span>
+        </div>
+        <div class="accordion-body">
+
+          <div class="option-row">
+            <input type="checkbox" id="cuttingEnabled" checked onchange="updateSubFields()">
+            <label for="cuttingEnabled" style="margin:0; font-weight:600; text-transform:none; font-size:12px;">Резка</label>
+          </div>
+          <div class="sub-options" id="cuttingOptions">
+            <div class="form-group"><label>руб/лист</label><input type="number" id="cuttingCostSetting" value="1" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Настройка</label><input type="number" id="setupCutting" value="300" oninput="onInputChange()"></div>
+          </div>
+
+          <div class="option-row">
+            <input type="checkbox" id="laminationEnabled" onchange="updateSubFields()">
+            <label for="laminationEnabled" style="margin:0; font-weight:600; text-transform:none; font-size:12px;">Ламинация</label>
+          </div>
+          <div class="sub-options" id="laminationOptions" style="display:none;">
+            <div class="form-group"><label>Глянец/мат, руб/лист</label><input type="number" id="laminationCost" value="12" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Настройка</label><input type="number" id="setupLamination" value="300" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Софтач SRA3, руб</label><input type="number" id="softtouchCostSRA3" value="30" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Софтач др., руб</label><input type="number" id="softtouchCostOther" value="50" oninput="onInputChange()"></div>
+            <div class="form-group full">
+              <label>Тип ламинации</label>
+              <div class="lam-type-toggle">
+                <button class="toggle-btn active" onclick="setLaminationType('gloss')" id="lam_gloss">Глянец/мат</button>
+                <button class="toggle-btn" onclick="setLaminationType('softtouch')" id="lam_softtouch">Софтач</button>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label>Цветность</label>
+              <div class="lam-color-toggle">
+                <button class="toggle-btn active" onclick="setLaminationSides('1+0')" id="lam_1_0">1+0</button>
+                <button class="toggle-btn" onclick="setLaminationSides('1+1')" id="lam_1_1">1+1</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="option-row">
+            <input type="checkbox" id="scoreEnabled" onchange="updateSubFields()">
+            <label for="scoreEnabled" style="margin:0; font-weight:600; text-transform:none; font-size:12px;">Биговка</label>
+          </div>
+          <div class="sub-options" id="scoreOptions" style="display:none;">
+            <div class="form-group"><label>руб/биг</label><input type="number" id="scoreCost" value="2" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Настройка</label><input type="number" id="setupScore" value="300" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Бигов на изд.</label><input type="number" id="scoreCountInput" value="2" oninput="onInputChange()"></div>
+          </div>
+
+          <div class="option-row">
+            <input type="checkbox" id="foldingEnabled" onchange="updateSubFields()">
+            <label for="foldingEnabled" style="margin:0; font-weight:600; text-transform:none; font-size:12px;">Фальцовка</label>
+          </div>
+          <div class="sub-options" id="foldingOptions" style="display:none;">
+            <div class="form-group"><label>руб/изд.</label><input type="number" id="foldingCostSetting" value="1" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Настройка</label><input type="number" id="setupFolding" value="300" oninput="onInputChange()"></div>
+          </div>
+
+          <div class="option-row">
+            <input type="checkbox" id="diecutEnabled" onchange="updateSubFields()">
+            <label for="diecutEnabled" style="margin:0; font-weight:600; text-transform:none; font-size:12px;">Вырубка</label>
+          </div>
+          <div class="sub-options" id="diecutOptions" style="display:none;">
+            <div class="form-group"><label>руб/изд.</label><input type="number" id="diecutCostSetting" value="5" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Настройка</label><input type="number" id="setupDiecut" value="5000" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Штамп</label><input type="number" id="diecutStampCostSetting" value="5500" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Штук на штампе</label><input type="number" id="diecutPerStamp" value="1" min="1" oninput="onInputChange()"></div>
+          </div>
+
+          <div class="option-row">
+            <input type="checkbox" id="uvLacquerEnabled" onchange="updateSubFields()">
+            <label for="uvLacquerEnabled" style="margin:0; font-weight:600; text-transform:none; font-size:12px;">УФ-лак</label>
+          </div>
+          <div class="sub-options" id="uvLacquerOptions" style="display:none;">
+            <div class="form-group"><label>руб/лист</label><input type="number" id="uvLacquerCostSetting" value="10" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Настройка</label><input type="number" id="setupUvLacquer" value="5000" oninput="onInputChange()"></div>
+          </div>
+
+          <div class="option-row">
+            <input type="checkbox" id="embossingEnabled" onchange="updateSubFields()">
+            <label for="embossingEnabled" style="margin:0; font-weight:600; text-transform:none; font-size:12px;">Тиснение</label>
+          </div>
+          <div class="sub-options" id="embossingOptions" style="display:none;">
+            <div class="form-group"><label>руб/изд.</label><input type="number" id="embossingCostSetting" value="10" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Настройка</label><input type="number" id="setupEmbossing" value="4500" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Клише</label><input type="number" id="embossingKlischeCostSetting" value="2000" oninput="onInputChange()"></div>
+          </div>
+
+          <div class="option-row">
+            <input type="checkbox" id="assemblyEnabled" onchange="updateSubFields()">
+            <label for="assemblyEnabled" style="margin:0; font-weight:600; text-transform:none; font-size:12px;">Сборка</label>
+          </div>
+          <div class="sub-options" id="assemblyOptions" style="display:none;">
+            <div class="form-group"><label>руб/изд.</label><input type="number" id="assemblyCostSetting" value="5" oninput="onInputChange()"></div>
+            <div class="form-group"><label>Настройка</label><input type="number" id="setupAssembly" value="300" oninput="onInputChange()"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Sheet Calculator -->
+    <div class="panel">
+      <div class="accordion-item" id="accordionSheets">
+        <div class="accordion-header" onclick="toggleAccordion('accordionSheets')">
+          <span>&#128208; Расчет листов по форматам</span>
+          <span class="accordion-icon">&#9660;</span>
+        </div>
+        <div class="accordion-body">
+          <div class="form-row">
+            <div class="form-group"><label>Ширина</label><input type="number" id="sheetCalcWidth" placeholder="мм"></div>
+            <div class="form-group"><label>Высота</label><input type="number" id="sheetCalcHeight" placeholder="мм"></div>
+          </div>
+          <div class="form-group mt-2">
+            <label>Тираж</label>
+            <input type="number" id="sheetCalcQuantity" value="1000">
+          </div>
+          <button class="btn btn-primary btn-sm w-full mt-3" onclick="calculateSheetFormats()">Рассчитать</button>
+          <div class="results-wrapper mt-3">
+            <table class="results-table">
+              <thead>
+                <tr><th>Формат</th><th>На лист</th><th>Нужно листов</th></tr>
+              </thead>
+              <tbody id="sheetCalcTableBody">
+                <tr><td colspan="3" class="text-muted">Введите размер и тираж</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========== COLUMN 3: OUTPUT ========== -->
+  <div class="col col-output">
+
+    <!-- Results Table -->
+    <div class="panel">
+      <div class="panel-header" style="justify-content: space-between;">
+        <span>&#128202; Результаты расчета</span>
+        <span class="results-summary" id="resultsSummary"></span>
+      </div>
+      <div class="panel-body" style="padding:0;">
+        <div class="results-wrapper">
+          <table class="results-table results-transposed" id="resultsBody">
+            <thead>
+              <tr>
+                <th class="metric-col">Показатель</th>
+                <th>SRA3</th>
+                <th>B2</th>
+                <th>50x70</th>
+                <th>47x62</th>
+                <th>47x65</th>
+                <th>52x72</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTable">
+              <tr><td colspan="7" class="text-muted">Введите параметры для расчета</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Saved Calculations -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>&#128190; Сохраненные расчеты</span>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button class="btn btn-sm" onclick="calcSelectedSum()" style="padding:2px 8px; font-size:10px; background:var(--success); color:#fff; border-color:var(--success);" title="Сумма выбранных">∑ Сумма</button>
+          <button class="btn btn-sm" onclick="clearSumSelection()" style="padding:2px 6px; font-size:10px;" title="Сбросить выделение">□</button>
+          <button class="btn btn-sm" onclick="clearSaved()" style="padding:2px 6px; font-size:10px;">Очистить</button>
+        </div>
+      </div>
+      <div class="panel-body" style="padding:0;">
+        <div class="results-wrapper">
+          <table class="saved-table">
+            <thead>
+              <tr>
+                <th style="width:28px;" title="Выбрать для суммы"></th>
+                <th>Продукт</th>
+                <th>Себест.</th>
+                <th>Цена</th>
+                <th>Прибыль</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="savedTableBody">
+              <tr><td colspan="6" class="text-muted" style="text-align:center;">Нет сохраненных расчетов</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Constants Reference -->
+    <div class="panel">
+      <div class="accordion-item" id="accordionConstants">
+        <div class="accordion-header" onclick="toggleAccordion('accordionConstants')">
+          <span>&#128295; Справочник констант</span>
+          <span class="accordion-icon">&#9660;</span>
+        </div>
+        <div class="accordion-body">
+          <div class="constants-grid">
+            <div>
+              <h4>&#128196; Бумага за кг</h4>
+              <ul>
+                <li>Офсетная: <b>125 &#8381;</b></li>
+                <li>Мелованная &#8804;200: <b>135 &#8381;</b></li>
+                <li>Мелованная &gt;200: <b>155 &#8381;</b></li>
+                <li>Картон: <b>160 &#8381;</b></li>
+              </ul>
+            </div>
+            <div>
+              <h4>&#128424;&#65039; Печать</h4>
+              <ul>
+                <li>SRA3: <b>15 &#8381;</b> + приладка <b>300 &#8381;</b></li>
+                <li>B2: <b>50 &#8381;</b> + приладка <b>500 &#8381;</b></li>
+                <li>Офсет A2: <b>2 &#8381;</b> + приладка <b>10 000 &#8381;</b></li>
+              </ul>
+            </div>
+            <div>
+              <h4>&#9986;&#65039; Послепечать</h4>
+              <ul>
+                <li>Резка: <b>1 &#8381;</b> + <b>300 &#8381;</b></li>
+                <li>Ламинация: <b>12 &#8381;</b> + <b>300 &#8381;</b></li>
+                <li>Софтач SRA3: <b>30 &#8381;</b></li>
+                <li>Софтач др.: <b>50 &#8381;</b></li>
+                <li>Биговка: <b>2 &#8381;</b> + <b>300 &#8381;</b></li>
+                <li>Фальцовка: <b>1 &#8381;</b> + <b>300 &#8381;</b></li>
+                <li>&#9986; В: <b>5 &#8381;</b> + <b>5000 &#8381;</b> + штамп</li>
+                <li>УФ-лак: <b>10 &#8381;</b> + <b>5000 &#8381;</b></li>
+                <li>Тиснение: <b>10 &#8381;</b> + <b>4500 &#8381;</b> + клише</li>
+                <li>Сборка: <b>5 &#8381;</b> + <b>300 &#8381;</b></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Price Modal -->
+<div class="modal-overlay" id="priceModal">
+  <div class="modal" style="max-width:950px;">
+    <div class="modal-header">
+      <h3>&#128203; Прайс-лист — интерактивный</h3>
+      <button class="modal-close" onclick="closePriceModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="priceListContainer" style="display:flex; flex-direction:column; gap:16px;">
+
+      <!-- Product info -->
+      <div id="priceProductInfo" style="font-size:13px; font-weight:600; color:var(--text); padding:8px 12px; background:#f8fafc; border-radius:var(--radius); border:1px solid var(--border);"></div>
+
+      <!-- Filters -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+        <div>
+          <label style="font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Формат</label>
+          <div class="quick-buttons" id="priceFormatButtons" style="grid-template-columns:repeat(3,1fr);"></div>
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Цветность</label>
+          <div class="sides-toggle" id="priceColorToggle">
+            <button class="toggle-btn active" onclick="setPriceColor('4+0')" id="pc_4_0">4+0</button>
+            <button class="toggle-btn" onclick="setPriceColor('4+4')" id="pc_4_4">4+4</button>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; display:block;">Плотность</label>
+          <div class="quick-buttons" id="priceDensityButtons" style="grid-template-columns:repeat(4,1fr);"></div>
+        </div>
+      </div>
+
+      <!-- Quantities grid -->
+      <div>
+        <label style="font-size:10px; font-weight:600; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; display:block;">Нажмите на цену чтобы сохранить позицию</label>
+        <div id="priceQuantitiesGrid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;"></div>
+      </div>
+
+      <!-- Basket -->
+      <div style="border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+        <div style="padding:10px 14px; background:#f8fafc; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:600; font-size:13px;">&#128203; Собранные позиции</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-sm" onclick="mergePriceBasket()" id="mergeBtn" style="display:none;">&#128279; Объединить</button>
+            <button class="btn btn-sm" onclick="clearPriceBasket()">&#128465; Очистить</button>
+          </div>
+        </div>
+        <div id="priceBasketBody" style="padding:10px 14px; min-height:60px;">
+          <p class="text-muted" style="text-align:center; margin:12px 0;">Нажмите на цену выше чтобы добавить позицию</p>
+        </div>
+      </div>
+
+    </div>
+    <div style="padding:10px 18px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:6px;">
+      <button class="btn" onclick="closePriceModal()">Закрыть</button>
+      <button class="btn btn-primary" onclick="generatePriceList()">&#128260; Сгенерировать</button>
+    </div>
+  </div>
+</div>
+
+<input type="hidden" id="densityInput" value="300">
+
+<!-- Save Template Modal -->
+<div class="modal-overlay" id="templateSaveModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>&#128190; Сохранить шаблон</h3>
+      <button class="modal-close" onclick="closeTemplateSaveModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Название шаблона</label>
+        <input type="text" id="templateNameInput" placeholder="Например: Пакет 30x40x12" onkeydown="if(event.key==='Enter')confirmSaveTemplate()">
+        <div class="tag-hint">Все текущие параметры (размер, тираж, цветность, бумага, послепечатка) будут сохранены</div>
+      </div>
+    </div>
+    <div style="padding:10px 18px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:6px;">
+      <button class="btn" onclick="closeTemplateSaveModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="confirmSaveTemplate()">&#128190; Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Layout Preview Modal -->
+<div class="modal-overlay" id="chartModal">
+  <div class="modal" style="max-width:900px; width:auto;">
+    <div class="modal-header">
+      <h3>👁 Макет размещения на печатном листе</h3>
+      <button class="modal-close" onclick="closeChartModal()">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex; flex-direction:column; align-items:center; gap:16px;">
+      <canvas id="layoutCanvas" style="border:1px solid var(--border); border-radius:var(--radius); max-width:100%;"></canvas>
+      <div id="layoutLegend" style="font-size:12px; display:flex; gap:16px; flex-wrap:wrap; justify-content:center;">
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:14px;height:14px;background:#2563eb;border-radius:2px;display:inline-block;"></span> Изделие</span>
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:14px;height:14px;background:#f59e0b;border-radius:2px;display:inline-block;"></span> Припуск (2мм)</span>
+        <span style="display:flex; align-items:center; gap:4px;"><span style="width:14px;height:14px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:2px;display:inline-block;"></span> Печатная зона</span>
+      </div>
+    </div>
+    <div style="padding:10px 18px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:6px;">
+      <button class="btn" onclick="closeChartModal()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let s = 1;
+let selectedBrochureFormat = null;
+let savedResults = [];
+let selectedProductType = "";
+let nextFieldIndex = 0;
+let parsedFields = [];
+let currentProductName = "";
+let currentUserQty = 0;
+let currentLaminationSides = "1+0";
+let currentLaminationType = "gloss";
+
+// Standard format presets
+const standardFormats = [
+  { name: "A6",        w: 105, h: 148, label: "A6" },
+  { name: "A5",        w: 148, h: 210, label: "A5" },
+  { name: "A4",        w: 210, h: 297, label: "A4" },
+  { name: "A3",        w: 297, h: 420, label: "A3" },
+  { name: "A2",        w: 420, h: 594, label: "A2" },
+  { name: "100x70",    w: 100, h: 70,  label: "100×70" },
+  { name: "vizitka",   w: 90,  h: 50,  label: "Визитка" },
+  { name: "200x98",    w: 200, h: 98,  label: "200×98" },
+  { name: "200x200",   w: 200, h: 200, label: "200×200" },
+  { name: "210x100",   w: 210, h: 100, label: "210×100" },
+  { name: "210x210",   w: 210, h: 210, label: "210×210" },
+];
+
+// Map format names for parser (lowercase keys)
+const formatNameMap = {
+  "а6": "A6", "a6": "A6",
+  "а5": "A5", "a5": "A5",
+  "а4": "A4", "a4": "A4",
+  "а3": "A3", "a3": "A3",
+  "а2": "A2", "a2": "A2",
+  "100х70": "100x70", "100x70": "100x70",
+  "визитка": "vizitka", "визитки": "vizitka",
+  "vizitka": "vizitka",
+  "200х98": "200x98", "200x98": "200x98",
+  "200х200": "200x200", "200x200": "200x200",
+  "210х100": "210x100", "210x100": "210x100",
+  "210х210": "210x210", "210x210": "210x210",
+  "евро": "210x100", "euro": "210x100",
+};
+
+function applyFormat(name) {
+  const fmt = standardFormats.find(f => f.name === name);
+  if (!fmt) return;
+  document.getElementById("width").value = fmt.w;
+  document.getElementById("height").value = fmt.h;
+  document.querySelectorAll("#formatGrid .quick-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.fmt === name);
+  });
+  onInputChange();
+}
+
+function renderFormatGrid() {
+  const grid = document.getElementById("formatGrid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  standardFormats.forEach(fmt => {
+    const btn = document.createElement("button");
+    btn.className = "quick-btn";
+    btn.dataset.fmt = fmt.name;
+    btn.innerHTML = `${fmt.label}<span class="fmt-dim">${fmt.w}×${fmt.h}</span>`;
+    btn.onclick = () => applyFormat(fmt.name);
+    grid.appendChild(btn);
+  });
+}
+
+// Price list basket
+let priceBasket = [];
+let selectedPriceFormat = "SRA3";
+let selectedPriceColor = "4+0";
+let selectedPriceDensity = null;
+
+const formatLabels = {
+  Z: "Цифра SRA3",
+  E: "Цифра B2",
+  A: "Офсет 50x70",
+  B: "Офсет 47x62",
+  R: "Офсет 47x65",
+  M: "Офсет 52x72"
+};
+
+const sheetFormats = [
+  { name: "Z", paperSize: { w: 320, h: 450 }, printArea: { w: 310, h: 430 } },
+  { name: "E", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } },
+  { name: "B", paperSize: { w: 470, h: 620 }, printArea: { w: 450, h: 610 } },
+  { name: "R", paperSize: { w: 470, h: 650 }, printArea: { w: 450, h: 640 } },
+  { name: "A", paperSize: { w: 500, h: 700 }, printArea: { w: 480, h: 690 } },
+  { name: "M", paperSize: { w: 520, h: 720 }, printArea: { w: 500, h: 710 } }
+];
+
+const densityMap = {
+  offset: [80, 100, 120, 160, 190],
+  matt: [90, 115, 130, 150, 170, 200, 250, 300],
+  cardboard: [215, 230, 250, 270, 300, 320, 350],
+  designer: [300],
+  adhesive: [80]
+};
+
+const quantities = [50, 100, 200, 300, 500, 1000, 3000, 5000];
+
+window.onload = () => {
+  initQuantityButtons();
+  updatePaperOptions();
+  onInputChange();
+};
+
+function initQuantityButtons() {
+  const container = document.getElementById("quantityButtons");
+  quantities.forEach(qty => {
+    const btn = document.createElement("button");
+    btn.className = "quick-btn";
+    btn.textContent = qty;
+    btn.dataset.qty = qty;
+    btn.onclick = () => {
+      document.getElementById("quantity").value = qty;
+      document.querySelectorAll("#quantityButtons .quick-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      onInputChange();
+    };
+    container.appendChild(btn);
+  });
+  container.children[5]?.classList.add("active");
+}
+
+function setSides(val) {
+  s = val;
+  document.getElementById("btn_4_0").classList.toggle("active", val === 1);
+  document.getElementById("btn_4_4").classList.toggle("active", val === 2);
+  onInputChange();
+}
+
+function setLaminationSides(val) {
+  currentLaminationSides = val;
+  document.getElementById("lam_1_0").classList.toggle("active", val === "1+0");
+  document.getElementById("lam_1_1").classList.toggle("active", val === "1+1");
+  onInputChange();
+}
+
+function setLaminationType(val) {
+  currentLaminationType = val;
+  document.getElementById("lam_gloss").classList.toggle("active", val === "gloss");
+  document.getElementById("lam_softtouch").classList.toggle("active", val === "softtouch");
+  onInputChange();
+}
+
+function selectProductType(type) {
+  selectedProductType = type;
+  onInputChange();
+}
+
+function updatePaperOptions() {
+  const paperType = document.getElementById("paperType").value;
+  const optionsDiv = document.getElementById("paperOptions");
+  const customPriceDiv = document.getElementById("customPaperPriceContainer");
+  const priceGroup = document.getElementById("paperPricePerKgGroup");
+  
+  optionsDiv.innerHTML = "";
+  
+  if (paperType === "designer" || paperType === "adhesive") {
+    customPriceDiv.style.display = "block";
+    priceGroup.style.display = "none";
+    const densities = densityMap[paperType] || [300];
+    densities.forEach(d => {
+      const btn = document.createElement("button");
+      btn.className = "quick-btn";
+      btn.textContent = d + " г/м\u00B2";
+      btn.onclick = () => {
+        document.querySelectorAll("#paperOptions .quick-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("densityInput").value = d;
+        document.getElementById("display_paper").textContent = `Выбрано: ${getPaperTypeLabel(paperType)} ${d} г/м\u00B2`;
+        onInputChange();
+      };
+      optionsDiv.appendChild(btn);
+    });
+    if (optionsDiv.children.length) optionsDiv.children[0].click();
+  } else {
+    customPriceDiv.style.display = "none";
+    priceGroup.style.display = "block";
+    const densities = densityMap[paperType] || [];
+    densities.forEach(d => {
+      const btn = document.createElement("button");
+      btn.className = "quick-btn";
+      btn.textContent = d + " г/м\u00B2";
+      btn.onclick = () => {
+        document.querySelectorAll("#paperOptions .quick-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("densityInput").value = d;
+        const price = getPaperPriceByTypeAndDensity(paperType, d);
+        document.getElementById("paperPricePerKg").value = price;
+        document.getElementById("display_paper").textContent = `Выбрано: ${getPaperTypeLabel(paperType)} ${d} г/м\u00B2 \u2014 ${price} \u20BD/кг`;
+        onInputChange();
+      };
+      optionsDiv.appendChild(btn);
+    });
+    if (optionsDiv.children.length) {
+      const idx = paperType === "matt" ? 7 : 0;
+      optionsDiv.children[Math.min(idx, optionsDiv.children.length - 1)]?.click();
+    }
+  }
+}
+
+function getPaperPriceByTypeAndDensity(paperType, density) {
+  if (paperType === "offset") return 125;
+  if (paperType === "matt") return density > 200 ? 155 : 135;
+  if (paperType === "cardboard") return 140;
+  return 0;
+}
+
+function getPaperTypeLabel(type) {
+  return type === "offset" ? "Офсетная" :
+         type === "matt" ? "Мелованная" :
+         type === "cardboard" ? "Картон" :
+         type === "designer" ? "Дизайнерская" :
+         type === "adhesive" ? "Самоклейка" : type;
+}
+
+function toggleAccordion(id) {
+  document.getElementById(id).classList.toggle("open");
+}
+
+function updateSubFields() {
+  const map = [
+    ['cuttingEnabled', 'cuttingOptions'],
+    ['laminationEnabled', 'laminationOptions'],
+    ['scoreEnabled', 'scoreOptions'],
+    ['foldingEnabled', 'foldingOptions'],
+    ['diecutEnabled', 'diecutOptions'],
+    ['uvLacquerEnabled', 'uvLacquerOptions'],
+    ['embossingEnabled', 'embossingOptions'],
+    ['assemblyEnabled', 'assemblyOptions']
+  ];
+  map.forEach(([chk, container]) => {
+    const el = document.getElementById(container);
+    if (el) el.style.display = document.getElementById(chk)?.checked ? "grid" : "none";
+  });
+  onInputChange();
+}
+
+function onInputChange() {
+  calculate();
+  renderSavedList();
+}
+
+function calculate() {
+  const tbody = document.getElementById("resultsTable");
+  const theadRow = document.querySelector("#resultsBody thead tr");
+  tbody.innerHTML = "";
+
+  // Reset headers
+  theadRow.innerHTML = '<th class="metric-col">\u041F\u043E\u043A\u0430\u0437\u0430\u0442\u0435\u043B\u044C</th>';
+
+  const w = Number(document.getElementById("width").value) || 0;
+  const h = Number(document.getElementById("height").value) || 0;
+  const N = Number(document.getElementById("quantity").value) || 0;
+  const density = Number(document.getElementById("densityInput").value);
+  const paperType = document.getElementById("paperType").value;
+  const isCustomPaper = paperType === "designer" || paperType === "adhesive";
+  const customPaperPrice = isCustomPaper ? Number(document.getElementById("customPaperPrice").value || 100) : 0;
+  const paperPricePerKg = isCustomPaper ? 0 : Number(document.getElementById("paperPricePerKg").value);
+  const multiplier = Number(document.getElementById("quantityMultiplier").value) || 1;
+
+  if (!w || !h || !N) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-muted">\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0440\u0430\u0437\u043C\u0435\u0440\u044B \u0438 \u0442\u0438\u0440\u0430\u0436</td></tr>`;
+    sheetFormats.forEach(s => {
+      const th = document.createElement("th");
+      th.textContent = s.name === "Z" ? "SRA3" : s.name === "E" ? "B2" : s.name === "A" ? "50\u00D770" : s.name === "B" ? "47\u00D762" : s.name === "R" ? "47\u00D765" : "52\u00D772";
+      theadRow.appendChild(th);
+    });
+    return;
+  }
+
+  const c_p_Z = Number(document.getElementById("printCostZ").value);
+  const P_Z = Number(document.getElementById("setupPrintZ").value);
+  const c_p_E = Number(document.getElementById("printCostE").value);
+  const P_E = Number(document.getElementById("setupPrintE").value);
+  const c_p_Offset = Number(document.getElementById("printCostOffsetA2").value);
+  const P_Offset = Number(document.getElementById("setupPrintOffsetA2").value);
+
+  const cuttingEnabled = document.getElementById("cuttingEnabled")?.checked ?? false;
+  const cuttingCost = Number(document.getElementById("cuttingCostSetting").value) || 0;
+  const setupCutting = Number(document.getElementById("setupCutting").value) || 0;
+  const laminationEnabled = document.getElementById("laminationEnabled")?.checked ?? false;
+  const laminationCost = Number(document.getElementById("laminationCost").value) || 0;
+  const setupLamination = Number(document.getElementById("setupLamination").value) || 0;
+  const softtouchCostSRA3 = Number(document.getElementById("softtouchCostSRA3").value) || 30;
+  const softtouchCostOther = Number(document.getElementById("softtouchCostOther").value) || 50;
+  const scoreEnabled = document.getElementById("scoreEnabled")?.checked ?? false;
+  const scoreCost = Number(document.getElementById("scoreCost").value) || 0;
+  const setupScore = Number(document.getElementById("setupScore").value) || 0;
+  const scoreCount = Number(document.getElementById("scoreCountInput").value) || 0;
+  const foldingEnabled = document.getElementById("foldingEnabled")?.checked ?? false;
+  const foldingCost = Number(document.getElementById("foldingCostSetting").value) || 0;
+  const setupFolding = Number(document.getElementById("setupFolding").value) || 0;
+  const diecutEnabled = document.getElementById("diecutEnabled")?.checked ?? false;
+  const diecutCost = Number(document.getElementById("diecutCostSetting").value) || 0;
+  const setupDiecut = Number(document.getElementById("setupDiecut").value) || 0;
+  const diecutStampCost = Number(document.getElementById("diecutStampCostSetting").value) || 0;
+  const uvLacquerEnabled = document.getElementById("uvLacquerEnabled")?.checked ?? false;
+  const uvLacquerCost = Number(document.getElementById("uvLacquerCostSetting").value) || 0;
+  const setupUvLacquer = Number(document.getElementById("setupUvLacquer").value) || 0;
+  const embossingEnabled = document.getElementById("embossingEnabled")?.checked ?? false;
+  const embossingCost = Number(document.getElementById("embossingCostSetting").value) || 0;
+  const setupEmbossing = Number(document.getElementById("setupEmbossing").value) || 0;
+  const embossingKlischeCost = Number(document.getElementById("embossingKlischeCostSetting").value) || 0;
+  const assemblyEnabled = document.getElementById("assemblyEnabled")?.checked ?? false;
+  const assemblyCost = Number(document.getElementById("assemblyCostSetting").value) || 0;
+  const setupAssembly = Number(document.getElementById("setupAssembly").value) || 0;
+
+  let minTotal = Infinity;
+  let bestFormat = null;
+  const cols = [];
+
+  sheetFormats.forEach(sheet => {
+    const W = w + 4;
+    const H = h + 4;
+    const printW = sheet.printArea.w;
+    const printH = sheet.printArea.h;
+    const v1 = Math.floor(printW / W) * Math.floor(printH / H);
+    const v2 = Math.floor(printW / H) * Math.floor(printH / W);
+    const N_opt = Math.max(v1, v2);
+    let baseSheets = N > 0 ? Math.ceil(N / N_opt) : 0;
+
+    const extraSheets = ["Z", "E"].includes(sheet.name) ? 3 : 250;
+    const totalSheets = baseSheets + extraSheets;
+
+    let paperTotal;
+    if (isCustomPaper) {
+      const sheetRatio = ["Z", "E"].includes(sheet.name) ? 0.25 : 0.5;
+      paperTotal = customPaperPrice * totalSheets * sheetRatio;
+    } else {
+      const areaSheet = (sheet.paperSize.w / 1000) * (sheet.paperSize.h / 1000);
+      const weightSheet = areaSheet * (density / 1000);
+      paperTotal = weightSheet * paperPricePerKg * totalSheets;
+    }
+
+    const printCostPerSheet = sheet.name === "Z" ? c_p_Z : sheet.name === "E" ? c_p_E : c_p_Offset;
+    const setupPrintValue = sheet.name === "Z" ? P_Z : sheet.name === "E" ? P_E : P_Offset;
+    const printTotal = printCostPerSheet * totalSheets * s + setupPrintValue;
+    const cuttingTotal = cuttingEnabled ? cuttingCost * totalSheets + setupCutting : 0;
+    let lamCostPerSheet;
+    if (currentLaminationType === "softtouch") {
+      lamCostPerSheet = sheet.name === "Z" ? softtouchCostSRA3 : softtouchCostOther;
+    } else {
+      lamCostPerSheet = laminationCost;
+    }
+    const lamSidesMultiplier = currentLaminationSides === "1+1" ? 2 : 1;
+    const laminationTotal = laminationEnabled ? lamCostPerSheet * totalSheets * lamSidesMultiplier + setupLamination : 0;
+    const scoreTotal = scoreEnabled ? N * scoreCount * scoreCost + setupScore : 0;
+    const foldingTotal = foldingEnabled ? N * foldingCost + setupFolding : 0;
+    const diecutPerStampVal = Math.max(1, Number(document.getElementById("diecutPerStamp").value) || 1);
+    const diecutTotal = diecutEnabled ? Math.ceil(N / diecutPerStampVal) * diecutCost + setupDiecut + diecutStampCost : 0;
+    const uvLacquerTotal = uvLacquerEnabled ? uvLacquerCost * totalSheets + setupUvLacquer : 0;
+    const embossingTotal = embossingEnabled ? N * embossingCost + setupEmbossing + embossingKlischeCost : 0;
+    const assemblyTotal = assemblyEnabled ? N * assemblyCost + setupAssembly : 0;
+    const total = paperTotal + printTotal + cuttingTotal + laminationTotal + scoreTotal +
+                  foldingTotal + diecutTotal + uvLacquerTotal + embossingTotal + assemblyTotal;
+    const roundedTotal = Math.ceil(total / 100) * 100;
+
+    const finalTotal = roundedTotal * multiplier;
+
+    if (N_opt > 0 && finalTotal < minTotal) {
+      minTotal = finalTotal;
+      bestFormat = sheet.name;
+    }
+
+    const shortNames = { Z: "SRA3", E: "B2", A: "50\u00D770", B: "47\u00D762", R: "47\u00D765", M: "52\u00D772" };
+    const th = document.createElement("th");
+    th.textContent = shortNames[sheet.name] || sheet.name;
+    if (sheet.name === bestFormat) th.classList.add("best-col-header");
+    theadRow.appendChild(th);
+
+    cols.push({
+      N_opt, totalSheets, paperTotal, printTotal, cuttingTotal, laminationTotal,
+      scoreTotal, foldingTotal, diecutTotal, uvLacquerTotal, embossingTotal, assemblyTotal,
+      finalTotal, roundedTotal, isBest: sheet.name === bestFormat && N_opt > 0, N_opt_val: N_opt,
+      sheetName: sheet.name, w, h
+    });
+  });
+
+  const dash = '<span class="dash">\u2014</span>';
+  const mkCell = (val, isBest) => isBest ? `<td class="best-col">${val}</td>` : `<td>${val}</td>`;
+
+  let tr = document.createElement("tr");
+  tr.innerHTML = `<td>N\u00D7N</td>` + cols.map(c => mkCell(c.N_opt > 0 ? c.N_opt : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u041B\u0438\u0441\u0442\u043E\u0432</td>` + cols.map(c => mkCell(c.N_opt > 0 ? c.totalSheets : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0411\u0443\u043C\u0430\u0433\u0430</td>` + cols.map(c => mkCell(c.N_opt > 0 ? c.paperTotal.toFixed(0) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u041F\u0435\u0447\u0430\u0442\u044C</td>` + cols.map(c => mkCell(c.N_opt > 0 ? c.printTotal.toFixed(0) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0420\u0435\u0437\u043A\u0430</td>` + cols.map(c => mkCell(c.N_opt > 0 ? (cuttingEnabled ? c.cuttingTotal.toFixed(0) : dash) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u041B\u0430\u043C\u0438\u043D\u0430\u0446\u0438\u044F</td>` + cols.map(c => mkCell(c.N_opt > 0 ? (laminationEnabled ? c.laminationTotal.toFixed(0) : dash) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0411\u0438\u0433\u043E\u0432\u043A\u0430</td>` + cols.map(c => mkCell(c.N_opt > 0 ? (scoreEnabled ? c.scoreTotal.toFixed(0) : dash) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0424\u0430\u043B\u044C\u0446\u043E\u0432\u043A\u0430</td>` + cols.map(c => mkCell(c.N_opt > 0 ? (foldingEnabled ? c.foldingTotal.toFixed(0) : dash) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0412\u044B\u0440\u0443\u0431\u043A\u0430</td>` + cols.map(c => mkCell(c.N_opt > 0 ? (diecutEnabled ? c.diecutTotal.toFixed(0) : dash) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0423\u0424-\u043B\u0430\u043A</td>` + cols.map(c => mkCell(c.N_opt > 0 ? (uvLacquerEnabled ? c.uvLacquerTotal.toFixed(0) : dash) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0422\u0438\u0441\u043D\u0435\u043D\u0438\u0435</td>` + cols.map(c => mkCell(c.N_opt > 0 ? (embossingEnabled ? c.embossingTotal.toFixed(0) : dash) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0421\u0431\u043E\u0440\u043A\u0430</td>` + cols.map(c => mkCell(c.N_opt > 0 ? (assemblyEnabled ? c.assemblyTotal.toFixed(0) : dash) : "\u2014", c.isBest)).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0418\u0422\u041E\u0413\u041E</td>` + cols.map(c => {
+    if (c.N_opt <= 0) return `<td>\u2014</td>`;
+    const val = c.finalTotal.toFixed(0) + " \u20BD";
+    return c.isBest ? `<td class="best-col">${val}</td>` : `<td>${val}</td>`;
+  }).join("");
+  tbody.appendChild(tr);
+
+  tr = document.createElement("tr");
+  tr.innerHTML = `<td>\u0414\u0435\u0439\u0441\u0442\u0432\u0438\u0435</td>` + cols.map(c => {
+    if (c.N_opt <= 0) return `<td>\u2014</td>`;
+    const color = s === 1 ? "4+0" : "4+4";
+    const shortName = c.sheetName === "Z" ? "SRA3" : c.sheetName === "E" ? "B2" : c.sheetName === "A" ? "50\u00D770" : c.sheetName === "B" ? "47\u00D762" : c.sheetName === "R" ? "47\u00D765" : "52\u00D772";
+    const rememberBtn = `<button class="remember-btn" onclick='rememberResult("${c.sheetName}", "${c.w}\u00D7${c.h}", "${color}", "${paperType}", ${density}, ${N}, ${c.roundedTotal})' title="\u0417\u0430\u043F\u043E\u043C\u043D\u0438\u0442\u044C">+</button>`;
+    const eyeBtn = `<button class="remember-btn" style="background:var(--primary); margin-left:3px;" onclick='showLayoutPreview("${shortName}")' title="\u041C\u0430\u043A\u0435\u0442 \u0440\u0430\u0437\u043C\u0435\u0449\u0435\u043D\u0438\u044F">\uD83D\uDC41</button>`;
+    const cellContent = rememberBtn + eyeBtn;
+    return c.isBest ? `<td class="best-col remember-cell">${cellContent}</td>` : `<td class="remember-cell">${cellContent}</td>`;
+  }).join("");
+  tbody.appendChild(tr);
+
+  const productPrefix = currentProductName ? currentProductName + " \u2022 " : "";
+  document.getElementById("resultsSummary").textContent =
+    `${productPrefix}${w}\u00D7${h} \u2022 ${N} \u2022 ${s === 1 ? "4+0" : "4+4"} \u2022 ${getPaperTypeLabel(paperType)} ${density}`;
+}
+
+function rememberResult(format, productSize, color, paperType, density, quantity, cost) {
+  const multiplier = Number(document.getElementById("quantityMultiplier").value) || 1;
+  const finalCost = cost * multiplier;
+  const customPaperPrice = (paperType === "designer" || paperType === "adhesive") 
+    ? Number(document.getElementById("customPaperPrice").value || 0) : 0;
+  
+  const key = JSON.stringify({ format, productSize, color, paperType, density, quantity, cost: finalCost, multiplier });
+  if (savedResults.some(r => JSON.stringify({
+    format: r.format, productSize: r.productSize, color: r.color, 
+    paperType: r.paperType, density: r.density, quantity: r.quantity, 
+    cost: r.cost, multiplier: r.multiplier || 1
+  }) === key)) {
+    alert("Этот вариант уже сохранен");
+    return;
+  }
+  
+  savedResults.push({
+    format, productSize, color, paperType, density, quantity,
+    userQty: currentUserQty || quantity,
+    cost: finalCost, originalCost: cost, multiplier,
+    productName: currentProductName,
+    productType: selectedProductType,
+    cuttingEnabled: document.getElementById("cuttingEnabled")?.checked ?? false,
+    laminationEnabled: document.getElementById("laminationEnabled")?.checked ?? false,
+    laminationSides: currentLaminationSides,
+    laminationType: currentLaminationType,
+    diecutPerStamp: Number(document.getElementById("diecutPerStamp").value) || 1,
+    scoreEnabled: document.getElementById("scoreEnabled")?.checked ?? false,
+    foldingEnabled: document.getElementById("foldingEnabled")?.checked ?? false,
+    diecutEnabled: document.getElementById("diecutEnabled")?.checked ?? false,
+    uvLacquerEnabled: document.getElementById("uvLacquerEnabled")?.checked ?? false,
+    embossingEnabled: document.getElementById("embossingEnabled")?.checked ?? false,
+    assemblyEnabled: document.getElementById("assemblyEnabled")?.checked ?? false,
+    priceOverride: null,
+    customPaperPrice
+  });
+  renderSavedList();
+}
+
+function renderSavedList() {
+  const tbody = document.getElementById("savedTableBody");
+  tbody.innerHTML = "";
+
+  if (savedResults.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-muted" style="text-align:center;">\u041D\u0435\u0442 \u0441\u043E\u0445\u0440\u0430\u043D\u0435\u043D\u043D\u044B\u0445 \u0440\u0430\u0441\u0447\u0435\u0442\u043E\u0432</td></tr>`;
+    return;
+  }
+
+  const markupFactor = (100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
+
+  savedResults.forEach((res, index) => {
+    const cost = res.cost;
+    const hasOverride = res.priceOverride !== null;
+    const priceWithMarkup = hasOverride ? res.priceOverride : cost * markupFactor;
+    const profit = priceWithMarkup - cost;
+
+    const pname = res.productName || res.productType || "";
+
+    let paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.density}\u0433`;
+    if (res.paperType === "designer" || res.paperType === "adhesive") {
+      paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.customPaperPrice}\u20BD/\u043B`;
+    }
+
+    const postpress = [];
+    if (res.cuttingEnabled) postpress.push("\u0420\u0435\u0437\u043A\u0430");
+    if (res.laminationEnabled) {
+      const lamLabel = res.laminationType === "softtouch" ? "\u0421\u043E\u0444\u0442\u0430\u0447" : "\u041B\u0430\u043C";
+      postpress.push(lamLabel + " " + res.laminationSides);
+    }
+    if (res.scoreEnabled) postpress.push("\u0411\u0438\u0433");
+    if (res.foldingEnabled) postpress.push("\u0424\u0430\u043B\u044C\u0446");
+    if (res.diecutEnabled) postpress.push("\u0412\u044B\u0440\u0443\u0431\u043A\u0430");
+    if (res.uvLacquerEnabled) postpress.push("\u0423\u0424");
+    if (res.embossingEnabled) postpress.push("\u0422\u0438\u0441\u043D");
+    if (res.assemblyEnabled) postpress.push("\u0421\u0431\u043E\u0440");
+
+    const qty = res.userQty || res.quantity;
+
+    const desc = `${pname}, ${res.color}, ${paperInfo}${postpress.length ? ', ' + postpress.join(', ') : ''} \u2014 ${qty} \u0448\u0442 \u2192 ${priceWithMarkup.toFixed(0)} \u20BD`;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div class="sum-chk" id="sum-chk-${index}" data-index="${index}" onclick="toggleSumSelection(${index})" title="\u0412\u044B\u0431\u0440\u0430\u0442\u044C \u0434\u043B\u044F \u0441\u0443\u043C\u043C\u044B"></div></td>
+      <td><div style="font-weight:600; font-size:13px;">${desc}</div></td>
+      <td class="cost-cell">${cost.toFixed(0)} \u20BD</td>
+      <td class="price-cell">${priceWithMarkup.toFixed(0)} \u20BD${hasOverride ? '<span style="font-size:10px; color:var(--warning);"> (\u0440\u0443\u0447\u043D\u0430\u044F)</span>' : ''}</td>
+      <td class="profit-cell">${profit.toFixed(0)} \u20BD</td>
+      <td><div class="actions">
+        <button onclick="increasePrice(${index}, 500)" title="+500 \u20BD">+500</button>
+        <button onclick="increasePrice(${index}, 1000)" title="+1000 \u20BD">+1\u041A</button>
+        <button onclick="removeSaved(${index})" title="\u0423\u0434\u0430\u043B\u0438\u0442\u044C" style="color:var(--danger);">\u00D7</button>
+      </div></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function increasePrice(index, amount) {
+  if (savedResults[index]) {
+    const currentCost = savedResults[index].cost;
+    const currentPrice = savedResults[index].priceOverride !== null ?
+                         savedResults[index].priceOverride :
+                         currentCost * ((100 + Number(document.getElementById("markupPercent").value || 20)) / 100);
+    savedResults[index].priceOverride = currentPrice + amount;
+    renderSavedList();
+  }
+}
+
+function removeSaved(index) {
+  savedResults.splice(index, 1);
+  renderSavedList();
+}
+
+function clearSaved() {
+  if (confirm("Очистить все сохраненные расчеты?")) {
+    savedResults = [];
+    renderSavedList();
+  }
+}
+
+function changeMultiplier(delta) {
+  const input = document.getElementById("quantityMultiplier");
+  let value = Number(input.value) || 1;
+  value += delta;
+  if (value < 1) value = 1;
+  input.value = value;
+  onMultiplierChange();
+}
+
+function onMultiplierChange() {
+  const input = document.getElementById("quantityMultiplier");
+  let value = Number(input.value);
+  if (value < 1 || isNaN(value)) input.value = 1;
+  onInputChange();
+}
+
+function parseRequest() {
+  const text = document.getElementById("clientRequestInput").value.toLowerCase();
+  const container = document.getElementById("parsedTags");
+  const hintEl = container.nextElementSibling;
+  container.innerHTML = "";
+  parsedFields = [];
+  nextFieldIndex = 0;
+
+  let formatDetected = false;
+  for (const [key, fmtName] of Object.entries(formatNameMap)) {
+    const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const fmtRegex = new RegExp('(?:^|[^\\w])' + escaped + '(?:[^\\w]|$)', 'i');
+    if (fmtRegex.test(text)) {
+      const fmt = standardFormats.find(f => f.name === fmtName);
+      if (fmt) {
+        parsedFields.push({ key: "format", label: "\u0444\u043E\u0440\u043C\u0430t " + fmt.label, val: fmtName, display: fmt.label + " (" + fmt.w + "\u00D7" + fmt.h + ")", isFormat: true });
+        formatDetected = true;
+        break;
+      }
+    }
+  }
+
+  if (!formatDetected) {
+    const sizeRegex = /(\d{1,4})\s*[\*\u00D7x\u0445\s]\s*(\d{1,4})\s*(?:\u043C\u043C|mm|\u043C)?/gi;
+    let sizeMatch = sizeRegex.exec(text);
+    if (sizeMatch) {
+      parsedFields.push({ key: "width",  label: "\u0448\u0438\u0440\u0438\u043D\u0430",  val: parseInt(sizeMatch[1]), display: sizeMatch[1] + " \u043C\u043C" });
+      parsedFields.push({ key: "height", label: "\u0432\u044B\u0441\u043E\u0442\u0430", val: parseInt(sizeMatch[2]), display: sizeMatch[2] + " \u043C\u043C" });
+    }
+  }
+
+  const colorRegex = /(4\s*\+\s*4|4\s*\+\s*0|1\s*\+\s*1|1\s*\+\s*0)/;
+  const colorMatch = text.match(colorRegex);
+  if (colorMatch) {
+    const cleanColor = colorMatch[1].replace(/\s/g, "");
+    parsedFields.push({ key: "color", label: "\u0446\u0432\u0435\u0442\u043D\u043E\u0441\u0442\u044C", val: cleanColor, display: cleanColor, isColor: true });
+  }
+
+  const densityRegex = /(\d{2,4})\s*(?:\u0433\u0440|g\/m?\u00B2?|\u0433\/\u043C\u00B2|\u0433\/\u043C2)/i;
+  const densityMatch = text.match(densityRegex);
+  if (densityMatch) {
+    parsedFields.push({ key: "density", label: "\u043F\u043B\u043E\u0442\u043D\u043E\u0441\u0442\u044C", val: parseInt(densityMatch[1]), display: densityMatch[1] + " \u0433/\u043C\u00B2" });
+  }
+
+  const poRegex = /\u043F\u043E\s+(\d{2,6})/;
+  const poMatch = text.match(poRegex);
+  if (poMatch) {
+    parsedFields.push({ key: "quantity", label: "\u0442\u0438\u0440\u0430\u0436", val: parseInt(poMatch[1]), display: poMatch[1] + " \u0448\u0442." });
+  } else {
+    const qtyRegex = /(\d{2,6})\s*(?:\u0448\u0442|шт|\u0435\u0434|\u0442\u0438\u0440\u0430\u0436|\u044D\u043A\u0437)/i;
+    const qtyMatch = text.match(qtyRegex);
+    if (qtyMatch) {
+      parsedFields.push({ key: "quantity", label: "\u0442\u0438\u0440\u0430\u0436", val: parseInt(qtyMatch[1]), display: qtyMatch[1] + " \u0448\u0442." });
+    }
+  }
+
+  if (parsedFields.length === 0) {
+    container.innerHTML = `<span class="text-muted text-sm">\u041D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C \u0440\u0430\u0441\u043F\u043E\u0437\u043D\u0430\u0442\u044C. \u041F\u043E\u043F\u0440\u043E\u0431\u0443\u0439\u0442\u0435: "90*200\u043C\u043C, 170\u0433\u0440, 4+4, 5000\u0448\u0442"</span>`;
+    if (hintEl) hintEl.style.display = "none";
+    return;
+  }
+
+  parsedFields.forEach((field, idx) => {
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.dataset.index = idx;
+    tag.dataset.key = field.key;
+    tag.innerHTML = `<b>${idx + 1}</b> ${field.display}`;
+    tag.title = `\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u0434\u043B\u044F: ${field.label}`;
+    tag.onclick = () => applyParsedField(idx);
+    container.appendChild(tag);
+  });
+
+  const orderLabels = parsedFields.map((f, i) => `${i + 1}-${f.label}`).join("  \u2022  ");
+  if (hintEl) {
+    hintEl.style.display = "";
+    hintEl.innerHTML = `<b>\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u0432 \u043F\u043E\u0440\u044F\u0434\u043A\u0435:</b> ${orderLabels}`;
+  }
+}
+
+function applyParsedField(index) {
+  const field = parsedFields[index];
+  if (!field) return;
+
+  document.querySelectorAll("#parsedTags .tag").forEach((t, i) => {
+    t.classList.toggle("active", i === index);
+  });
+
+  switch (field.key) {
+    case "width":
+      document.getElementById("width").value = field.val;
+      break;
+    case "height":
+      document.getElementById("height").value = field.val;
+      break;
+    case "color":
+      if (field.val === "4+0") setSides(1);
+      else if (field.val === "4+4") setSides(2);
+      else if (field.val === "1+0") setSides(1);
+      else if (field.val === "1+1") setSides(2);
+      break;
+    case "density":
+      document.getElementById("densityInput").value = field.val;
+      document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+        if (parseInt(btn.textContent) === field.val) btn.click();
+      });
+      break;
+    case "quantity":
+      document.getElementById("quantity").value = field.val;
+      break;
+    case "format":
+      applyFormat(field.val);
+      break;
+  }
+
+  onInputChange();
+}
+
+function clearRequest() {
+  document.getElementById("clientRequestInput").value = "";
+  document.getElementById("parsedTags").innerHTML = "";
+  parsedFields = [];
+  nextFieldIndex = 0;
+  const hintEl = document.querySelector("#parsedTags + .tag-hint");
+  if (hintEl) {
+    hintEl.style.display = "";
+    hintEl.textContent = "\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u043D\u0430 \u0442\u0435\u0433, \u0447\u0442\u043E\u0431\u044B \u043F\u0440\u0438\u043C\u0435\u043D\u0438\u0442\u044C \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435";
+  }
+}
+
+function selectBrochureFormat(btn, format) {
+  document.querySelectorAll(".brochure-formats .quick-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  selectedBrochureFormat = format;
+  calculateBrochureResult();
+}
+
+function calculateBrochureResult() {
+  if (!selectedBrochureFormat) return;
+  const val = parseInt(document.getElementById("brochureInput").value?.replace(/\D/g, ""));
+  if (!val) { document.getElementById("brochureOutput").value = ""; return; }
+  
+  const divisor = { A6: 32, A5: 16, A4: 8, "210x210": 12 }[selectedBrochureFormat];
+  document.getElementById("brochureOutput").value = Math.ceil(val / divisor);
+}
+
+function calculateSheetFormats() {
+  const w = Number(document.getElementById("sheetCalcWidth").value);
+  const h = Number(document.getElementById("sheetCalcHeight").value);
+  const N = Number(document.getElementById("sheetCalcQuantity").value);
+  const tbody = document.getElementById("sheetCalcTableBody");
+  tbody.innerHTML = "";
+  
+  if (!w || !h || !N) {
+    tbody.innerHTML = `<tr><td colspan="3" class="text-muted">Заполните все поля</td></tr>`;
+    return;
+  }
+  
+  const W = w + 4, H = h + 4;
+  sheetFormats.forEach(sheet => {
+    const printW = sheet.printArea.w, printH = sheet.printArea.h;
+    const v1 = Math.floor(printW / W) * Math.floor(printH / H);
+    const v2 = Math.floor(printW / H) * Math.floor(printH / W);
+    const N_opt = Math.max(v1, v2);
+    
+    const tr = document.createElement("tr");
+    if (N_opt === 0) {
+      tr.innerHTML = `<td>${formatLabels[sheet.name]}</td><td colspan="2" class="text-muted">Не помещается</td>`;
+    } else {
+      tr.innerHTML = `<td>${formatLabels[sheet.name]}</td><td>${N_opt}</td><td>${Math.ceil(N / N_opt)}</td>`;
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+function openPriceModal() {
+  document.getElementById("priceModal").classList.add("active");
+  generatePriceList();
+}
+
+function openHintsModal() {
+  document.getElementById("hintsModal").classList.add("active");
+}
+
+function closeHintsModal() {
+  document.getElementById("hintsModal").classList.remove("active");
+}
+
+
+function closePriceModal() {
+  document.getElementById("priceModal").classList.remove("active");
+}
+
+function openChartModal() {
+  document.getElementById("chartModal").classList.add("active");
+}
+
+function closeChartModal() {
+  document.getElementById("chartModal").classList.remove("active");
+}
+
+let currentLayoutFormat = null;
+
+function showLayoutPreview(formatName) {
+  currentLayoutFormat = formatName;
+  const canvas = document.getElementById("layoutCanvas");
+  const ctx = canvas.getContext("2d");
+  openChartModal();
+
+  const w = Number(document.getElementById("width").value) || 0;
+  const h = Number(document.getElementById("height").value) || 0;
+  if (!w || !h) return;
+
+  const sheet = sheetFormats.find(s => {
+    const sn = s.name === "Z" ? "SRA3" : s.name === "E" ? "B2" : s.name === "A" ? "50\u00D770" : s.name === "B" ? "47\u00D762" : s.name === "R" ? "47\u00D765" : "52\u00D772";
+    return sn === formatName;
+  });
+  if (!sheet) return;
+
+  const W = w + 4;
+  const H = h + 4;
+  const printW = sheet.printArea.w;
+  const printH = sheet.printArea.h;
+  const v1 = Math.floor(printW / W) * Math.floor(printH / H);
+  const v2 = Math.floor(printW / H) * Math.floor(printH / W);
+  const useRotated = v2 > v1;
+  const itemW = useRotated ? H : W;
+  const itemH = useRotated ? W : H;
+  const countX = Math.floor(printW / itemW);
+  const countY = Math.floor(printH / itemH);
+
+  const margin = 30;
+  const paperW = sheet.paperSize.w;
+  const paperH = sheet.paperSize.h;
+  const maxCanvasW = 820;
+  const scale = Math.min(maxCanvasW / (paperW + margin * 2), 500 / (paperH + margin * 2), 3);
+
+  canvas.width = (paperW + margin * 2) * scale * devicePixelRatio;
+  canvas.height = (paperH + margin * 2) * scale * devicePixelRatio;
+  canvas.style.width = (paperW + margin * 2) * scale + "px";
+  canvas.style.height = (paperH + margin * 2) * scale + "px";
+  ctx.scale(scale * devicePixelRatio, scale * devicePixelRatio);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, paperW + margin * 2, paperH + margin * 2);
+
+  ctx.fillStyle = "#f1f5f9";
+  ctx.strokeStyle = "#94a3b8";
+  ctx.lineWidth = 1;
+  ctx.fillRect(margin, margin, paperW, paperH);
+  ctx.strokeRect(margin, margin, paperW, paperH);
+
+  ctx.fillStyle = "#e2e8f0";
+  ctx.strokeStyle = "#64748b";
+  ctx.setLineDash([4, 3]);
+  const paX = margin + (paperW - printW) / 2;
+  const paY = margin + (paperH - printH) / 2;
+  ctx.fillRect(paX, paY, printW, printH);
+  ctx.strokeRect(paX, paY, printW, printH);
+  ctx.setLineDash([]);
+
+  const startX = paX + (printW - countX * itemW) / 2;
+  const startY = paY + (printH - countY * itemH) / 2;
+
+  for (let row = 0; row < countY; row++) {
+    for (let col = 0; col < countX; col++) {
+      const x = startX + col * itemW;
+      const y = startY + row * itemH;
+
+      ctx.fillStyle = "#fbbf24";
+      ctx.fillRect(x, y, itemW, itemH);
+
+      const bleed = 2;
+      ctx.fillStyle = "#2563eb";
+      ctx.fillRect(x + bleed, y + bleed, itemW - bleed * 2, itemH - bleed * 2);
+
+      ctx.strokeStyle = "#1e40af";
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(x + bleed, y + bleed, itemW - bleed * 2, itemH - bleed * 2);
+    }
+  }
+
+  ctx.fillStyle = "#334155";
+  ctx.font = "bold 11px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText(`${paperW}\u00D7${paperH} мм (${formatLabels[sheet.name]})`, margin + paperW / 2, margin - 10);
+
+  ctx.fillStyle = "#64748b";
+  ctx.font = "10px sans-serif";
+  ctx.fillText(`Печатная зона: ${printW}\u00D7${printH} мм`, paX + printW / 2, paY - 3);
+
+  ctx.fillStyle = "#475569";
+  ctx.font = "bold 10px sans-serif";
+  ctx.fillText(`${w}\u00D7${h} мм ${useRotated ? "(повёрнуто)" : ""}`, startX + countX * itemW / 2, startY + countY * itemH + 14);
+
+  ctx.fillStyle = "#dc2626";
+  ctx.font = "bold 12px sans-serif";
+  ctx.fillText(`${countX * countY} шт (${countX}\u00D7${countY})`, startX + countX * itemW / 2, startY + countY * itemH + 28);
+
+  const legend = document.getElementById("layoutLegend");
+  legend.innerHTML = `
+    <span style="display:flex; align-items:center; gap:4px;"><span style="width:14px;height:14px;background:#2563eb;border-radius:2px;display:inline-block;"></span> Изделие ${w}\u00D7${h} мм</span>
+    <span style="display:flex; align-items:center; gap:4px;"><span style="width:14px;height:14px;background:#fbbf24;border-radius:2px;display:inline-block;"></span> Припуск 2мм</span>
+    <span style="display:flex; align-items:center; gap:4px;"><span style="width:14px;height:14px;background:#e2e8f0;border:1px solid #94a3b8;border-radius:2px;display:inline-block;"></span> Печатная зона ${printW}\u00D7${printH}</span>
+    <span style="display:flex; align-items:center; gap:4px;"><span style="width:14px;height:14px;background:#f1f5f9;border:1px solid #94a3b8;border-radius:2px;display:inline-block;"></span> Лист ${paperW}\u00D7${paperH}</span>
+  `;
+}
+
+function calcPriceFor(formatName, colorSides, density, qty) {
+  const w = Number(document.getElementById("width").value) || 0;
+  const h = Number(document.getElementById("height").value) || 0;
+  if (!w || !h || !qty) return 0;
+
+  const paperType = document.getElementById("paperType").value;
+  const isCustomPaper = paperType === "designer" || paperType === "adhesive";
+  const customPaperPrice = isCustomPaper ? Number(document.getElementById("customPaperPrice").value || 100) : 0;
+  const paperPricePerKg = isCustomPaper ? 0 : Number(document.getElementById("paperPricePerKg").value);
+  const markupFactor = (100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
+  const colorMult = colorSides === "4+4" ? 2 : 1;
+
+  const sheet = sheetFormats.find(s => {
+    const sn = s.name === "Z" ? "SRA3" : s.name === "E" ? "B2" : s.name === "A" ? "50\u00D770" : s.name === "B" ? "47\u00D762" : s.name === "R" ? "47\u00D765" : "52\u00D772";
+    return sn === formatName;
+  });
+  if (!sheet) return 0;
+
+  const W = w + 4, H = h + 4;
+  const printW = sheet.printArea.w, printH = sheet.printArea.h;
+  const v1 = Math.floor(printW / W) * Math.floor(printH / H);
+  const v2 = Math.floor(printW / H) * Math.floor(printH / W);
+  const N_opt = Math.max(v1, v2);
+  if (N_opt === 0) return 0;
+
+  let baseSheets = Math.ceil(qty / N_opt);
+  const extraSheets = ["Z", "E"].includes(sheet.name) ? 3 : 250;
+  const totalSheets = baseSheets + extraSheets;
+
+  let paperTotal;
+  if (isCustomPaper) {
+    const sheetRatio = ["Z", "E"].includes(sheet.name) ? 0.25 : 0.5;
+    paperTotal = customPaperPrice * totalSheets * sheetRatio;
+  } else {
+    const areaSheet = (sheet.paperSize.w / 1000) * (sheet.paperSize.h / 1000);
+    const weightSheet = areaSheet * (density / 1000);
+    paperTotal = weightSheet * paperPricePerKg * totalSheets;
+  }
+
+  const c_p_Z = Number(document.getElementById("printCostZ").value);
+  const P_Z = Number(document.getElementById("setupPrintZ").value);
+  const c_p_E = Number(document.getElementById("printCostE").value);
+  const P_E = Number(document.getElementById("setupPrintE").value);
+  const c_p_Offset = Number(document.getElementById("printCostOffsetA2").value);
+  const P_Offset = Number(document.getElementById("setupPrintOffsetA2").value);
+  const printCostPerSheet = sheet.name === "Z" ? c_p_Z : sheet.name === "E" ? c_p_E : c_p_Offset;
+  const setupPrintValue = sheet.name === "Z" ? P_Z : sheet.name === "E" ? P_E : P_Offset;
+  const printTotal = printCostPerSheet * totalSheets * colorMult + setupPrintValue;
+
+  const cuttingEnabled = document.getElementById("cuttingEnabled")?.checked ?? false;
+  const cuttingCost = Number(document.getElementById("cuttingCostSetting").value) || 0;
+  const setupCutting = Number(document.getElementById("setupCutting").value) || 0;
+  const laminationEnabled = document.getElementById("laminationEnabled")?.checked ?? false;
+  const lamCostGloss = Number(document.getElementById("laminationCost").value) || 0;
+  const setupLamination = Number(document.getElementById("setupLamination").value) || 0;
+  const softtouchCostSRA3 = Number(document.getElementById("softtouchCostSRA3").value) || 30;
+  const softtouchCostOther = Number(document.getElementById("softtouchCostOther").value) || 50;
+  const lamMult = currentLaminationSides === "1+1" ? 2 : 1;
+  const lamCostPerSheet = currentLaminationType === "softtouch" ? (sheet.name === "Z" ? softtouchCostSRA3 : softtouchCostOther) : lamCostGloss;
+  const scoreEnabled = document.getElementById("scoreEnabled")?.checked ?? false;
+  const scoreCost = Number(document.getElementById("scoreCost").value) || 0;
+  const setupScore = Number(document.getElementById("setupScore").value) || 0;
+  const scoreCount = Number(document.getElementById("scoreCountInput").value) || 0;
+  const foldingEnabled = document.getElementById("foldingEnabled")?.checked ?? false;
+  const foldingCost = Number(document.getElementById("foldingCostSetting").value) || 0;
+  const setupFolding = Number(document.getElementById("setupFolding").value) || 0;
+  const diecutEnabled = document.getElementById("diecutEnabled")?.checked ?? false;
+  const diecutCost = Number(document.getElementById("diecutCostSetting").value) || 0;
+  const setupDiecut = Number(document.getElementById("setupDiecut").value) || 0;
+  const diecutStampCost = Number(document.getElementById("diecutStampCostSetting").value) || 0;
+  const diecutPerStampVal = Math.max(1, Number(document.getElementById("diecutPerStamp").value) || 1);
+  const uvLacquerEnabled = document.getElementById("uvLacquerEnabled")?.checked ?? false;
+  const uvLacquerCost = Number(document.getElementById("uvLacquerCostSetting").value) || 0;
+  const setupUvLacquer = Number(document.getElementById("setupUvLacquer").value) || 0;
+  const embossingEnabled = document.getElementById("embossingEnabled")?.checked ?? false;
+  const embossingCost = Number(document.getElementById("embossingCostSetting").value) || 0;
+  const setupEmbossing = Number(document.getElementById("setupEmbossing").value) || 0;
+  const embossingKlischeCost = Number(document.getElementById("embossingKlischeCostSetting").value) || 0;
+  const assemblyEnabled = document.getElementById("assemblyEnabled")?.checked ?? false;
+  const assemblyCost = Number(document.getElementById("assemblyCostSetting").value) || 0;
+  const setupAssembly = Number(document.getElementById("setupAssembly").value) || 0;
+
+  const cuttingTotal = cuttingEnabled ? cuttingCost * totalSheets + setupCutting : 0;
+  const laminationTotal = laminationEnabled ? lamCostPerSheet * totalSheets * lamMult + setupLamination : 0;
+  const scoreTotal = scoreEnabled ? qty * scoreCount * scoreCost + setupScore : 0;
+  const foldingTotal = foldingEnabled ? qty * foldingCost + setupFolding : 0;
+  const diecutTotal = diecutEnabled ? Math.ceil(qty / diecutPerStampVal) * diecutCost + setupDiecut + diecutStampCost : 0;
+  const uvLacquerTotal = uvLacquerEnabled ? uvLacquerCost * totalSheets + setupUvLacquer : 0;
+  const embossingTotal = embossingEnabled ? qty * embossingCost + setupEmbossing + embossingKlischeCost : 0;
+  const assemblyTotal = assemblyEnabled ? qty * assemblyCost + setupAssembly : 0;
+
+  const total = paperTotal + printTotal + cuttingTotal + laminationTotal + scoreTotal +
+                foldingTotal + diecutTotal + uvLacquerTotal + embossingTotal + assemblyTotal;
+  const roundedTotal = Math.ceil(total / 100) * 100;
+return Math.ceil(roundedTotal * markupFactor / 100) * 100;
+}
+
+function generatePriceList() {
+  const w = Number(document.getElementById("width").value) || 0;
+  const h = Number(document.getElementById("height").value) || 0;
+  const paperType = document.getElementById("paperType").value;
+  const isCustomPaper = paperType === "designer" || paperType === "adhesive";
+  const densities = isCustomPaper ? [0] : (densityMap[paperType] || []);
+
+  const infoBar = document.getElementById("priceProductInfo");
+  const densityLabel = isCustomPaper ? `${Number(document.getElementById("customPaperPrice").value || 100)} \u20BD/лист` : `${document.getElementById("densityInput").value} г/м\u00B2`;
+  infoBar.textContent = `${w}\u00D7${h} мм  \u2022  ${getPaperTypeLabel(paperType)} ${densityLabel}  \u2022  ${selectedPriceColor}`;
+
+  const formatContainer = document.getElementById("priceFormatButtons");
+  formatContainer.innerHTML = "";
+  const shortNames = { Z: "SRA3", E: "B2", A: "50\u00D770", B: "47\u00D762", R: "47\u00D765", M: "52\u00D772" };
+  sheetFormats.forEach(sheet => {
+    const name = shortNames[sheet.name];
+    const btn = document.createElement("button");
+    btn.className = "quick-btn" + (name === selectedPriceFormat ? " active" : "");
+    btn.textContent = name;
+    btn.onclick = () => { selectedPriceFormat = name; renderPriceFilters(); renderPriceGrid(); };
+    formatContainer.appendChild(btn);
+  });
+
+  const densityContainer = document.getElementById("priceDensityButtons");
+  densityContainer.innerHTML = "";
+  if (isCustomPaper) {
+    selectedPriceDensity = 0;
+    const btn = document.createElement("button");
+    btn.className = "quick-btn active";
+    btn.textContent = "Польз.";
+    densityContainer.appendChild(btn);
+  } else {
+    densities.forEach(d => {
+      const btn = document.createElement("button");
+      const isActive = selectedPriceDensity === null ? d === Number(document.getElementById("densityInput").value) : d === selectedPriceDensity;
+      if (selectedPriceDensity === null && isActive) selectedPriceDensity = d;
+      btn.className = "quick-btn" + (isActive ? " active" : "");
+      btn.textContent = d;
+      btn.onclick = () => { selectedPriceDensity = d; renderPriceFilters(); renderPriceGrid(); };
+      densityContainer.appendChild(btn);
+    });
+  }
+
+  document.getElementById("pc_4_0").classList.toggle("active", selectedPriceColor === "4+0");
+  document.getElementById("pc_4_4").classList.toggle("active", selectedPriceColor === "4+4");
+
+  renderPriceGrid();
+}
+
+function setPriceColor(val) {
+  selectedPriceColor = val;
+  document.getElementById("pc_4_0").classList.toggle("active", val === "4+0");
+  document.getElementById("pc_4_4").classList.toggle("active", val === "4+4");
+  renderPriceGrid();
+}
+
+function renderPriceFilters() {
+  const formatContainer = document.getElementById("priceFormatButtons");
+  if (formatContainer) {
+    Array.from(formatContainer.children).forEach(btn => {
+      btn.classList.toggle("active", btn.textContent === selectedPriceFormat);
+    });
+  }
+  const densityContainer = document.getElementById("priceDensityButtons");
+  if (densityContainer) {
+    Array.from(densityContainer.children).forEach(btn => {
+      btn.classList.toggle("active", Number(btn.textContent) === selectedPriceDensity || (btn.textContent === "Польз." && selectedPriceDensity === 0));
+    });
+  }
+}
+
+function renderPriceGrid() {
+  const grid = document.getElementById("priceQuantitiesGrid");
+  grid.innerHTML = "";
+  const density = selectedPriceDensity || Number(document.getElementById("densityInput").value) || 300;
+
+  quantities.forEach(qty => {
+    const price = calcPriceFor(selectedPriceFormat, selectedPriceColor, density, qty);
+    const card = document.createElement("div");
+    card.className = "price-qty-card";
+    card.innerHTML = `
+      <div class="qty-label">${qty.toLocaleString()} шт.</div>
+      <button class="price-btn" onclick="savePriceItem(${qty}, ${price})">${price.toLocaleString()} \u20BD</button>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function savePriceItem(qty, price) {
+  const w = Number(document.getElementById("width").value);
+  const h = Number(document.getElementById("height").value);
+  const density = selectedPriceDensity || Number(document.getElementById("densityInput").value) || 300;
+  const paperType = document.getElementById("paperType").value;
+  const isCustomPaper = paperType === "designer" || paperType === "adhesive";
+
+  priceBasket.push({
+    id: Date.now() + Math.random(),
+    size: `${w}\u00D7${h}`,
+    format: selectedPriceFormat,
+    color: selectedPriceColor,
+    density: isCustomPaper ? `${Number(document.getElementById("customPaperPrice").value || 100)} \u20BD/лист` : `${density} г/м\u00B2`,
+    paperType: getPaperTypeLabel(paperType),
+    qty: qty,
+    price: price,
+    merged: false
+  });
+  renderPriceBasket();
+}
+
+function renderPriceBasket() {
+  const body = document.getElementById("priceBasketBody");
+  if (priceBasket.length === 0) {
+    body.innerHTML = '<p class="text-muted" style="text-align:center; margin:12px 0;">Нажмите на цену выше чтобы добавить позицию</p>';
+    document.getElementById("mergeBtn").style.display = "none";
+    return;
+  }
+
+  const checkedCount = priceBasket.filter(i => i._checked && !i.merged).length;
+  document.getElementById("mergeBtn").style.display = checkedCount >= 2 ? "inline-flex" : "none";
+
+  body.innerHTML = "";
+  priceBasket.forEach((item, idx) => {
+    const div = document.createElement("div");
+    div.className = "price-basket-item" + (item.merged ? " merged" : "");
+    if (item.merged) {
+      div.innerHTML = `
+        <span style="width:16px;"></span>
+        <div class="basket-info">${item.display}</div>
+        <span class="basket-price">${item.priceLabel}</span>
+        <button class="basket-delete" onclick="deletePriceItem(${idx})">\u00D7</button>
+      `;
+    } else {
+      div.innerHTML = `
+        <input type="checkbox" ${item._checked ? "checked" : ""} onchange="togglePriceCheck(${idx})" />
+        <div class="basket-info">${item.size}, ${item.format}, ${item.color}, ${item.paperType} ${item.density}, ${item.qty.toLocaleString()} шт.</div>
+        <span class="basket-price">${item.price.toLocaleString()} \u20BD</span>
+        <button class="basket-delete" onclick="deletePriceItem(${idx})">\u00D7</button>
+      `;
+    }
+    body.appendChild(div);
+  });
+}
+
+function togglePriceCheck(idx) {
+  priceBasket[idx]._checked = !priceBasket[idx]._checked;
+  renderPriceBasket();
+}
+
+function deletePriceItem(idx) {
+  priceBasket.splice(idx, 1);
+  renderPriceBasket();
+}
+
+function mergePriceBasket() {
+  const checked = priceBasket.filter((item, idx) => item._checked && !item.merged);
+  if (checked.length < 2) return;
+
+  checked.sort((a, b) => a.qty - b.qty);
+
+  const size = checked[0].size;
+  const format = checked[0].format;
+  const color = checked[0].color;
+  const paper = checked[0].paperType;
+  const density = checked[0].density;
+
+  const qtys = checked.map(c => c.qty.toLocaleString()).join("/");
+  const prices = checked.map(c => c.price.toLocaleString() + " \u20BD").join("/");
+
+  priceBasket = priceBasket.filter((item, idx) => !(item._checked && !item.merged));
+
+  priceBasket.push({
+    id: Date.now(),
+    size, format, color, density, paperType: paper,
+    qty: checked.map(c => c.qty),
+    price: checked.map(c => c.price),
+    merged: true,
+    display: `${size}, ${format}, ${color}, ${paper} ${density}, ${qtys} шт.`,
+    priceLabel: prices,
+    _checked: false
+  });
+
+  renderPriceBasket();
+}
+
+function clearPriceBasket() {
+  priceBasket = [];
+  renderPriceBasket();
+}
+
+function copyToClipboard() {
+  if (savedResults.length === 0) { alert("Нет данных для копирования"); return; }
+  
+  const markupFactor = (100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
+  let text = "";
+  
+  savedResults.forEach(res => {
+    const cost = res.cost;
+    const hasOverride = res.priceOverride !== null;
+    const priceWithMarkup = hasOverride ? res.priceOverride : cost * markupFactor;
+    const pname = res.productName || res.productType || "";
+    
+    let paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.density}г`;
+    if (res.paperType === "designer" || res.paperType === "adhesive") {
+      paperInfo = `${getPaperTypeLabel(res.paperType)} ${res.customPaperPrice}\u20BD/\u041B`;
+    }
+    
+    const postpress = [];
+    if (res.cuttingEnabled) postpress.push("\u0420\u0435\u0437\u043A\u0430");
+    if (res.laminationEnabled) {
+      const lamLabel = res.laminationType === "softtouch" ? "\u0421\u043E\u0444\u0442\u0430\u0447" : "\u041B\u0430\u043C";
+      postpress.push(lamLabel + " " + res.laminationSides);
+    }
+    if (res.scoreEnabled) postpress.push("\u0411\u0438\u0433");
+    if (res.foldingEnabled) postpress.push("\u0424\u0430\u043B\u044C\u0446");
+    if (res.diecutEnabled) postpress.push("\u0412\u044B\u0440\u0443\u0431\u043A\u0430");
+    if (res.uvLacquerEnabled) postpress.push("\u0423\u0424");
+    if (res.embossingEnabled) postpress.push("\u0422\u0438\u0441\u043D");
+    if (res.assemblyEnabled) postpress.push("\u0421\u0431\u043E\u0440");
+    
+    const qty = res.userQty || res.quantity;
+    
+    text += `${pname}, ${res.color}, ${paperInfo}${postpress.length ? ', ' + postpress.join(', ') : ''} \u2014 ${qty} \u0448\u0442 \u2192 ${priceWithMarkup.toFixed(0)} \u20BD\n`;
+  });
+  
+  navigator.clipboard.writeText(text).then(() => alert("\u0421\u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u043E \u0432 \u0431\u0443\u0444\u0435\u0440 \u043E\u0431\u043C\u0435\u043D\u0430!")).catch(() => alert("\u041E\u0448\u0438\u0431\u043A\u0430 \u043A\u043E\u043F\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"));
+}
+
+function toggleSumSelection(index) {
+  const el = document.getElementById("sum-chk-" + index);
+  if (el) el.classList.toggle("selected");
+}
+
+function calcSelectedSum() {
+  const markupFactor = (100 + Number(document.getElementById("markupPercent").value || 20)) / 100;
+  let selectedCost = 0;
+  let selectedPrice = 0;
+  let count = 0;
+  
+  document.querySelectorAll(".sum-chk.selected").forEach(el => {
+    const idx = Number(el.dataset.index);
+    const res = savedResults[idx];
+    if (res) {
+      const price = res.priceOverride !== null ? res.priceOverride : res.cost * markupFactor;
+      selectedCost += res.cost;
+      selectedPrice += price;
+      count++;
+    }
+  });
+  
+  if (count === 0) { alert("\u041D\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043E \u043F\u043E\u0437\u0438\u0446\u0438\u0439"); return; }
+  
+  const profit = selectedPrice - selectedCost;
+  const lines = [
+    `\u0412\u044B\u0431\u0440\u0430\u043D\u043E \u043F\u043E\u0437\u0438\u0446\u0438\u0439: ${count}`,
+    `\u0421\u0435\u0431\u0435\u0441\u0442\u043E\u0438\u043C\u043E\u0441\u0442\u044C: ${selectedCost.toFixed(0)} \u20BD`,
+    `\u0426\u0435\u043D\u0430 \u0441 \u043D\u0430\u0446\u0435\u043D\u043A\u043E\u0439: ${selectedPrice.toFixed(0)} \u20BD`,
+    `\u041F\u0440\u0438\u0431\u044B\u043B\u044C: ${profit.toFixed(0)} \u20BD`
+  ];
+  alert(lines.join("\n"));
+}
+
+function clearSumSelection() {
+  document.querySelectorAll(".sum-chk.selected").forEach(el => el.classList.remove("selected"));
+}
+
+// ========== SAFE STORAGE ==========
+function isStorageSupported() {
+  try {
+    const testKey = '__polygraphy_test__';
+    localStorage.setItem(testKey, '1');
+    const readback = localStorage.getItem(testKey);
+    localStorage.removeItem(testKey);
+    return readback === '1';
+  } catch (e) {
+    return false;
+  }
+}
+
+const storageAvailable = isStorageSupported();
+
+function safeStorageSet(key, value) {
+  if (!storageAvailable) {
+    console.warn('localStorage недоступен, шаблоны не сохранятся');
+    return false;
+  }
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (e) {
+    console.error('Ошибка сохранения в localStorage:', e);
+    alert('Не удалось сохранить шаблон. Возможно, хранилище переполнено.');
+    return false;
+  }
+}
+
+function safeStorageGet(key) {
+  if (!storageAvailable) return null;
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    return null;
+  }
+}
+
+function safeStorageRemove(key) {
+  if (!storageAvailable) return false;
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ========== TEMPLATES ==========
+const TEMPLATES_KEY = "polygraphy_templates_v1";
+
+function openTemplateSaveModal() {
+  document.getElementById("templateNameInput").value = "";
+  document.getElementById("templateSaveModal").classList.add("active");
+  setTimeout(() => document.getElementById("templateNameInput").focus(), 100);
+}
+
+function closeTemplateSaveModal() {
+  document.getElementById("templateSaveModal").classList.remove("active");
+}
+
+function getTemplates() {
+  try { return JSON.parse(safeStorageGet(TEMPLATES_KEY)) || {}; }
+  catch(e) { return {}; }
+}
+
+function setTemplates(tmpl) {
+  safeStorageSet(TEMPLATES_KEY, JSON.stringify(tmpl));
+}
+
+function confirmSaveTemplate() {
+  const name = document.getElementById("templateNameInput").value.trim();
+  if (!name) { alert("Введите название шаблона"); return; }
+
+  const tmpl = getTemplates();
+  if (tmpl[name]) { if (!confirm(`Шаблон "${name}" уже существует. Перезаписать?`)) return; }
+
+  tmpl[name] = captureCurrentState();
+  setTemplates(tmpl);
+  closeTemplateSaveModal();
+  renderTemplatesBar();
+}
+
+function captureCurrentState() {
+  return {
+    width: document.getElementById("width").value,
+    height: document.getElementById("height").value,
+    quantity: document.getElementById("quantity").value,
+    sides: s,
+    paperType: document.getElementById("paperType").value,
+    density: document.getElementById("densityInput").value,
+    customPaperPrice: document.getElementById("customPaperPrice").value,
+    paperPricePerKg: document.getElementById("paperPricePerKg").value,
+    markupPercent: document.getElementById("markupPercent").value,
+    quantityMultiplier: document.getElementById("quantityMultiplier").value,
+    productType: selectedProductType,
+    cuttingEnabled: document.getElementById("cuttingEnabled")?.checked ?? false,
+    cuttingCost: document.getElementById("cuttingCostSetting")?.value ?? "1",
+    setupCutting: document.getElementById("setupCutting")?.value ?? "300",
+    laminationEnabled: document.getElementById("laminationEnabled")?.checked ?? false,
+    laminationCost: document.getElementById("laminationCost")?.value ?? "12",
+    setupLamination: document.getElementById("setupLamination")?.value ?? "300",
+    softtouchCostSRA3: document.getElementById("softtouchCostSRA3")?.value ?? "30",
+    softtouchCostOther: document.getElementById("softtouchCostOther")?.value ?? "50",
+    laminationType: currentLaminationType,
+    laminationSides: currentLaminationSides,
+    scoreEnabled: document.getElementById("scoreEnabled")?.checked ?? false,
+    scoreCost: document.getElementById("scoreCost")?.value ?? "2",
+    setupScore: document.getElementById("setupScore")?.value ?? "300",
+    scoreCount: document.getElementById("scoreCountInput")?.value ?? "2",
+    foldingEnabled: document.getElementById("foldingEnabled")?.checked ?? false,
+    foldingCost: document.getElementById("foldingCostSetting")?.value ?? "1",
+    setupFolding: document.getElementById("setupFolding")?.value ?? "300",
+    diecutEnabled: document.getElementById("diecutEnabled")?.checked ?? false,
+    diecutCost: document.getElementById("diecutCostSetting")?.value ?? "5",
+    setupDiecut: document.getElementById("setupDiecut")?.value ?? "5000",
+    diecutStampCost: document.getElementById("diecutStampCostSetting")?.value ?? "5500",
+    diecutPerStamp: document.getElementById("diecutPerStamp")?.value ?? "1",
+    uvLacquerEnabled: document.getElementById("uvLacquerEnabled")?.checked ?? false,
+    uvLacquerCost: document.getElementById("uvLacquerCostSetting")?.value ?? "10",
+    setupUvLacquer: document.getElementById("setupUvLacquer")?.value ?? "5000",
+    embossingEnabled: document.getElementById("embossingEnabled")?.checked ?? false,
+    embossingCost: document.getElementById("embossingCostSetting")?.value ?? "10",
+    setupEmbossing: document.getElementById("setupEmbossing")?.value ?? "4500",
+    embossingKlischeCost: document.getElementById("embossingKlischeCostSetting")?.value ?? "2000",
+    assemblyEnabled: document.getElementById("assemblyEnabled")?.checked ?? false,
+    assemblyCost: document.getElementById("assemblyCostSetting")?.value ?? "5",
+    setupAssembly: document.getElementById("setupAssembly")?.value ?? "300",
+    printCostZ: document.getElementById("printCostZ")?.value ?? "15",
+    setupPrintZ: document.getElementById("setupPrintZ")?.value ?? "300",
+    printCostE: document.getElementById("printCostE")?.value ?? "50",
+    setupPrintE: document.getElementById("setupPrintE")?.value ?? "500",
+    printCostOffsetA2: document.getElementById("printCostOffsetA2")?.value ?? "2",
+    setupPrintOffsetA2: document.getElementById("setupPrintOffsetA2")?.value ?? "10000",
+    savedAt: new Date().toLocaleString("ru-RU")
+  };
+}
+
+function applyTemplate(name) {
+  const tmpl = getTemplates()[name];
+  if (!tmpl) return;
+  const t = tmpl;
+
+  if (t.width !== undefined) document.getElementById("width").value = t.width;
+  if (t.height !== undefined) document.getElementById("height").value = t.height;
+  if (t.quantity !== undefined) document.getElementById("quantity").value = t.quantity;
+  if (t.sides !== undefined) setSides(t.sides);
+  if (t.paperType !== undefined) {
+    document.getElementById("paperType").value = t.paperType;
+    updatePaperOptions();
+  }
+  if (t.density !== undefined) {
+    document.getElementById("densityInput").value = t.density;
+    document.querySelectorAll("#paperOptions .quick-btn").forEach(btn => {
+      if (btn.textContent.trim() === t.density + " г/м\u00B2") btn.click();
+    });
+  }
+  if (t.customPaperPrice !== undefined) document.getElementById("customPaperPrice").value = t.customPaperPrice;
+  if (t.paperPricePerKg !== undefined) document.getElementById("paperPricePerKg").value = t.paperPricePerKg;
+  if (t.markupPercent !== undefined) document.getElementById("markupPercent").value = t.markupPercent;
+  if (t.quantityMultiplier !== undefined) document.getElementById("quantityMultiplier").value = t.quantityMultiplier;
+  if (t.productType !== undefined) selectProductType(t.productType);
+
+  const setChk = (id, val) => { const el = document.getElementById(id); if (el) { el.checked = val; el.dispatchEvent(new Event("change")); } };
+  setChk("cuttingEnabled", t.cuttingEnabled);
+  setChk("laminationEnabled", t.laminationEnabled);
+  setChk("scoreEnabled", t.scoreEnabled);
+  setChk("foldingEnabled", t.foldingEnabled);
+  setChk("diecutEnabled", t.diecutEnabled);
+  setChk("uvLacquerEnabled", t.uvLacquerEnabled);
+  setChk("embossingEnabled", t.embossingEnabled);
+  setChk("assemblyEnabled", t.assemblyEnabled);
+
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+  setVal("cuttingCostSetting", t.cuttingCost);
+  setVal("setupCutting", t.setupCutting);
+  setVal("laminationCost", t.laminationCost);
+  setVal("setupLamination", t.setupLamination);
+  setVal("softtouchCostSRA3", t.softtouchCostSRA3);
+  setVal("softtouchCostOther", t.softtouchCostOther);
+  if (t.laminationType) setLaminationType(t.laminationType);
+  if (t.laminationSides) setLaminationSides(t.laminationSides);
+  setVal("scoreCost", t.scoreCost);
+  setVal("setupScore", t.setupScore);
+  setVal("scoreCountInput", t.scoreCount);
+  setVal("foldingCostSetting", t.foldingCost);
+  setVal("setupFolding", t.setupFolding);
+  setVal("diecutCostSetting", t.diecutCost);
+  setVal("setupDiecut", t.setupDiecut);
+  setVal("diecutStampCostSetting", t.diecutStampCost);
+  setVal("diecutPerStamp", t.diecutPerStamp);
+  setVal("uvLacquerCostSetting", t.uvLacquerCost);
+  setVal("setupUvLacquer", t.setupUvLacquer);
+  setVal("embossingCostSetting", t.embossingCost);
+  setVal("setupEmbossing", t.setupEmbossing);
+  setVal("embossingKlischeCostSetting", t.embossingKlischeCost);
+  setVal("assemblyCostSetting", t.assemblyCost);
+  setVal("setupAssembly", t.setupAssembly);
+
+  setVal("printCostZ", t.printCostZ);
+  setVal("setupPrintZ", t.setupPrintZ);
+  setVal("printCostE", t.printCostE);
+  setVal("setupPrintE", t.setupPrintE);
+  setVal("printCostOffsetA2", t.printCostOffsetA2);
+  setVal("setupPrintOffsetA2", t.setupPrintOffsetA2);
+
+  onInputChange();
+}
+
+function deleteTemplate(name, event) {
+  event.stopPropagation();
+  const code = prompt('Введите код для удаления шаблона:');
+  if (code !== '1234567890') {
+    alert('Неверный код. Удаление отменено.');
+    return;
+  }
+  if (!confirm(`Удалить шаблон "${name}"?`)) return;
+  const tmpl = getTemplates();
+  delete tmpl[name];
+  setTemplates(tmpl);
+  renderTemplatesBar();
+}
+
+function renderTemplatesBar() {
+  const tmpl = getTemplates();
+  const bar = document.getElementById("templatesBar");
+  const panel = document.getElementById("templatesPanel");
+  const names = Object.keys(tmpl);
+
+  if (names.length === 0) {
+    bar.innerHTML = '<span class="template-empty">Нет сохранённых шаблонов. Нажмите "Сохранить шаблон" в шапке.</span>';
+    panel.style.display = "none";
+    return;
+  }
+
+  panel.style.display = "";
+  bar.innerHTML = "";
+  names.forEach(name => {
+    const chip = document.createElement("span");
+    chip.className = "template-chip";
+    chip.title = `Применить шаблон "${name}" (${tmpl[name].savedAt || ""})`;
+    chip.innerHTML = `${name} <button class="tmpl-del" onclick="deleteTemplate('${name.replace(/'/g, "\\'")}', event)" title="Удалить">\u00D7</button>`;
+    chip.onclick = (e) => { if (e.target.classList.contains("tmpl-del")) return; applyTemplate(name); };
+    bar.appendChild(chip);
+  });
+}
+
+window.addEventListener("load", () => {
+  renderTemplatesBar();
+  renderFormatGrid();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { closePriceModal(); closeChartModal(); closeTemplateSaveModal(); closeHintsModal(); }
+});
+</script>
+
+</div><!-- /.main-app -->
+<!-- Hints Modal -->
+<div class="modal-overlay" id="hintsModal">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <h3>&#10067; Подсказки по расчету</h3>
+      <button class="modal-close" onclick="closeHintsModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="accordion-item open" style="margin-bottom:10px;">
+        <div class="accordion-header"><span>Как считать блокноты?</span></div>
+        <div class="accordion-body">
+          <p>Блокнот считайте как обычное изделие нужного формата. Добавьте:</p>
+          <ul>
+            <li><b>Резку</b> — для разделения листов/блоков.</li>
+            <li><b>Сборку</b> — скрепление пружиной, скобой или клеем.</li>
+            <li>Если блоки сгибаются — добавьте <b>фальцовку</b>.</li>
+            <li>Тираж = количество готовых блокнотов.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="accordion-item open" style="margin-bottom:10px;">
+        <div class="accordion-header"><span>Как считать пакеты?</span></div>
+        <div class="accordion-body">
+          <p>Пакет — это вырубное изделие со сборкой:</p>
+          <ul>
+            <li>Включите <b>вырубку</b> (штамп + настройка).</li>
+            <li>Укажите реальный размер развертки пакета (ширина × высота).</li>
+            <li>Добавьте <b>сборку</b> — склеивание/складывание.</li>
+            <li>При необходимости — <b>биговку</b> для сгибов.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="accordion-item open" style="margin-bottom:10px;">
+        <div class="accordion-header"><span>Как считать брошюры?</span></div>
+        <div class="accordion-body">
+          <p>Брошюра — это сложенные и скрепленные листы:</p>
+          <ul>
+            <li>Задайте формат одной страницы (например, А5 или А6).</li>
+            <li>Тираж = количество готовых брошюр.</li>
+            <li>Включите <b>фальцовку</b> — сгиб каждой брошюры.</li>
+            <li>Добавьте <b>сборку</b> — скрепление скобой/пружиной.</li>
+            <li>Если обложка ламинируется — включите <b>ламинирование</b>.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="accordion-item open" style="margin-bottom:10px;">
+        <div class="accordion-header"><span>Как считать изделия с вырубкой?</span></div>
+        <div class="accordion-body">
+          <p>Для вырубных изделий (визитки нестандартной формы, этикетки и т.д.):</p>
+          <ul>
+            <li>Включите <b>вырубку</b> и укажите стоимость штампа.</li>
+            <li>Стоимость штампа добавляется один раз на весь тираж.</li>
+            <li>Если на штампе несколько изделий — укажите «Штук на штампе».</li>
+            <li>Не забудьте <b>резку</b> и/или <b>сборку</b>, если требуется.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+    <div style="padding:10px 18px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+      <button class="btn" onclick="closeHintsModal()">Закрыть</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
